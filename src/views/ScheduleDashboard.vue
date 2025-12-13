@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, RouterLink } from 'vue-router'
 import { useCheckinStore } from '@/stores/checkin'
 import MainLayout from '@/components/layout/MainLayout.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
@@ -120,19 +120,23 @@ onMounted(() => {
             <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
               <h3 class="mb-4 text-lg font-semibold text-slate-800 dark:text-white">最近打卡</h3>
               <div class="space-y-3">
-                <div
+                <RouterLink
                   v-for="day in store.scheduleStats.dailyStats.slice(-5).reverse()"
                   :key="day.dayLabel"
-                  class="flex items-center justify-between rounded-xl bg-slate-50 p-3 dark:bg-slate-700/50"
+                  :to="{ name: 'day-detail', params: { scheduleId, dayLabel: day.dayLabel } }"
+                  class="flex items-center justify-between rounded-xl bg-slate-50 p-3 transition-colors hover:bg-slate-100 dark:bg-slate-700/50 dark:hover:bg-slate-700"
                 >
                   <div class="flex items-center gap-3">
                     <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900/50">
                       <i class="bi bi-calendar-event text-sm text-violet-600 dark:text-violet-400"></i>
                     </div>
-                    <span class="text-sm font-medium text-slate-700 dark:text-slate-200">{{ day.dayLabel }}</span>
+                    <div class="min-w-0 flex-1">
+                      <span class="text-sm font-medium text-slate-700 dark:text-slate-200">{{ day.dayLabel }}：</span>
+                      <span class="text-sm text-slate-500 dark:text-slate-400 truncate">{{ day.threadTitle }}</span>
+                    </div>
                   </div>
-                  <span class="text-sm text-slate-500 dark:text-slate-400">{{ day.checkinCount }} 人</span>
-                </div>
+                  <span class="ml-2 flex-shrink-0 text-sm text-slate-500 dark:text-slate-400">{{ day.checkinCount }} 人</span>
+                </RouterLink>
               </div>
             </div>
           </div>
