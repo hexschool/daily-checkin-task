@@ -48,28 +48,24 @@ onMounted(() => {
             :value="store.scheduleStats.totalCheckins"
             unit="次"
             icon="bi-check2-all"
-            color="violet"
           />
           <StatCard
             title="參與人數"
             :value="store.scheduleStats.uniqueUsers"
             unit="人"
             icon="bi-people-fill"
-            color="emerald"
           />
           <StatCard
             title="累積天數"
             :value="store.scheduleStats.dailyTasks"
             unit="天"
             icon="bi-calendar-check"
-            color="amber"
           />
           <StatCard
             title="完成進度"
             :value="store.scheduleStats.progress"
             unit="%"
             icon="bi-graph-up-arrow"
-            color="rose"
           />
         </div>
 

@@ -20,9 +20,11 @@ export interface ChannelInfo {
 
 export interface DailyStat {
   dayLabel: string
+  dayNumber: number
   date: string
+  threadTitle: string
+  threadUrl: string
   checkinCount: number
-  threadId: string
 }
 
 // 用戶列表
@@ -61,11 +63,14 @@ export interface UserDetail {
 
 export interface CheckinDetailItem {
   dayLabel: string
+  dayNumber: number
   date: string
   checkedIn: boolean
   checkinTime: string | null
   messageId: string | null
   threadId: string
+  threadTitle: string
+  threadUrl: string
 }
 
 // 單日詳情
