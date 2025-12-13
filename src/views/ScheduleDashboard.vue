@@ -96,26 +96,6 @@ onMounted(() => {
 
           <!-- Quick Actions -->
           <div class="space-y-6">
-            <!-- Discord Link Card -->
-            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-violet-50 to-indigo-50 p-6 dark:border-slate-700 dark:from-violet-900/30 dark:to-indigo-900/30">
-              <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm dark:bg-slate-800">
-                <i class="bi bi-discord text-2xl text-violet-600 dark:text-violet-400"></i>
-              </div>
-              <h3 class="text-lg font-semibold text-slate-800 dark:text-white">Discord 頻道</h3>
-              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                {{ store.scheduleStats.channelInfo?.channelName || '打卡回報區' }}
-              </p>
-              <a
-                :href="store.scheduleStats.channelInfo?.channelId ? `https://discord.com/channels/${store.scheduleStats.channelInfo.guildId}/${store.scheduleStats.channelInfo.channelId}` : '#'"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="mt-4 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-violet-700"
-              >
-                前往頻道
-                <i class="bi bi-arrow-right"></i>
-              </a>
-            </div>
-
             <!-- Recent Activity -->
             <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
               <h3 class="mb-4 text-lg font-semibold text-slate-800 dark:text-white">最近打卡</h3>

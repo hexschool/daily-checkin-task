@@ -2,10 +2,27 @@
 import { computed } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { useThemeStore } from '@/stores/theme'
+import { useCheckinStore } from '@/stores/checkin'
 
 const route = useRoute()
 const themeStore = useThemeStore()
+const checkinStore = useCheckinStore()
 const scheduleId = computed(() => route.params.scheduleId as string)
+
+// 取得最近一天的討論串連結（移除最後的 messageId 參數）
+const latestThreadUrl = computed(() => {
+  const stats = checkinStore.scheduleStats?.dailyStats
+  if (!stats || stats.length === 0) return null
+  const latestDay = stats[stats.length - 1]
+  if (!latestDay?.threadUrl) return null
+  // 移除最後一個參數（messageId），只保留 channel 連結
+  const parts = latestDay.threadUrl.split('/')
+  if (parts.length > 1) {
+    parts.pop()
+    return parts.join('/')
+  }
+  return latestDay.threadUrl
+})
 
 const menuItems = computed(() => [
   {
@@ -91,7 +108,28 @@ function isActive(to: { name: string }) {
 
     <!-- Footer -->
     <div class="border-t border-slate-200 p-4 dark:border-slate-700">
-      <div class="rounded-xl bg-gradient-to-r from-violet-50 to-indigo-50 p-4 dark:from-violet-900/30 dark:to-indigo-900/30">
+      <a
+        v-if="latestThreadUrl"
+        :href="latestThreadUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="block rounded-xl bg-gradient-to-r from-violet-50 to-indigo-50 p-4 transition-all hover:from-violet-100 hover:to-indigo-100 dark:from-violet-900/30 dark:to-indigo-900/30 dark:hover:from-violet-900/50 dark:hover:to-indigo-900/50"
+      >
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-800">
+            <i class="bi bi-discord text-lg text-violet-600 dark:text-violet-300"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-slate-700 dark:text-slate-200">Discord 社群</p>
+            <p class="truncate text-xs text-slate-500 dark:text-slate-400">查看打卡討論</p>
+          </div>
+          <i class="bi bi-arrow-up-right text-slate-400"></i>
+        </div>
+      </a>
+      <div
+        v-else
+        class="rounded-xl bg-gradient-to-r from-violet-50 to-indigo-50 p-4 dark:from-violet-900/30 dark:to-indigo-900/30"
+      >
         <div class="flex items-center gap-3">
           <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-800">
             <i class="bi bi-discord text-lg text-violet-600 dark:text-violet-300"></i>
