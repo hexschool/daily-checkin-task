@@ -46,8 +46,8 @@ onMounted(() => {
     <div class="p-8">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-2xl font-bold text-white">參與者列表</h1>
-        <p v-if="store.scheduleStats" class="mt-1 text-slate-400">
+        <h1 class="text-2xl font-bold text-slate-800 dark:text-white">參與者列表</h1>
+        <p v-if="store.scheduleStats" class="mt-1 text-slate-500 dark:text-slate-400">
           {{ store.scheduleStats.scheduleName }}
         </p>
       </div>
@@ -83,13 +83,13 @@ onMounted(() => {
         </div>
 
         <!-- Empty State -->
-        <div v-else class="rounded-2xl border border-white/5 bg-white/5 py-16 text-center">
+        <div v-else class="rounded-2xl border border-slate-200 bg-white py-16 text-center shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <div class="mb-4 flex justify-center">
-            <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/5">
-              <i class="bi bi-search text-3xl text-slate-600"></i>
+            <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-700">
+              <i class="bi bi-search text-3xl text-slate-400"></i>
             </div>
           </div>
-          <p class="text-slate-400">
+          <p class="text-slate-500 dark:text-slate-400">
             {{ searchQuery ? '找不到符合的用戶' : '尚無參與者' }}
           </p>
         </div>

@@ -29,7 +29,7 @@ onMounted(() => {
       <!-- Back Link -->
       <RouterLink
         :to="{ name: 'dashboard', params: { scheduleId } }"
-        class="mb-6 inline-flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-white"
+        class="mb-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-violet-600"
       >
         <i class="bi bi-arrow-left"></i>
         返回 Dashboard

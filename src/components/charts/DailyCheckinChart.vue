@@ -14,12 +14,15 @@ import {
   type TooltipItem,
 } from 'chart.js'
 import type { DailyStat } from '@/types/checkin'
+import { useThemeStore } from '@/stores/theme'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler)
 
 const props = defineProps<{
   dailyStats: DailyStat[]
 }>()
+
+const themeStore = useThemeStore()
 
 const chartData = computed(() => ({
   labels: props.dailyStats.map((stat) => stat.dayLabel),
@@ -31,7 +34,7 @@ const chartData = computed(() => ({
       backgroundColor: (context: { chart: { ctx: CanvasRenderingContext2D } }) => {
         const ctx = context.chart.ctx
         const gradient = ctx.createLinearGradient(0, 0, 0, 300)
-        gradient.addColorStop(0, 'rgba(139, 92, 246, 0.3)')
+        gradient.addColorStop(0, 'rgba(139, 92, 246, 0.2)')
         gradient.addColorStop(1, 'rgba(139, 92, 246, 0)')
         return gradient
       },
@@ -40,14 +43,14 @@ const chartData = computed(() => ({
       pointRadius: 0,
       pointHoverRadius: 6,
       pointBackgroundColor: '#8B5CF6',
-      pointBorderColor: '#1E1B4B',
+      pointBorderColor: themeStore.theme === 'dark' ? '#1E293B' : '#FFFFFF',
       pointBorderWidth: 3,
       borderWidth: 3,
     },
   ],
 }))
 
-const chartOptions = {
+const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -55,7 +58,7 @@ const chartOptions = {
       display: false,
     },
     tooltip: {
-      backgroundColor: 'rgba(15, 23, 42, 0.9)',
+      backgroundColor: '#1E293B',
       borderColor: 'rgba(139, 92, 246, 0.3)',
       borderWidth: 1,
       padding: 12,
@@ -66,7 +69,7 @@ const chartOptions = {
       bodyFont: {
         size: 13,
       },
-      titleColor: '#E2E8F0',
+      titleColor: '#F1F5F9',
       bodyColor: '#94A3B8',
       displayColors: false,
       callbacks: {
@@ -83,7 +86,7 @@ const chartOptions = {
         display: false,
       },
       ticks: {
-        color: '#475569',
+        color: themeStore.theme === 'dark' ? '#94A3B8' : '#64748B',
         maxRotation: 0,
         autoSkip: true,
         maxTicksLimit: 8,
@@ -94,13 +97,13 @@ const chartOptions = {
     },
     y: {
       grid: {
-        color: 'rgba(255, 255, 255, 0.05)',
+        color: themeStore.theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
       },
       border: {
         display: false,
       },
       ticks: {
-        color: '#475569',
+        color: themeStore.theme === 'dark' ? '#94A3B8' : '#64748B',
         font: {
           size: 11,
         },
@@ -113,7 +116,7 @@ const chartOptions = {
     intersect: false,
     mode: 'index' as const,
   },
-}
+}))
 </script>
 
 <template>

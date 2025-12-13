@@ -37,8 +37,8 @@ onMounted(() => {
       <template v-else-if="store.scheduleStats">
         <!-- Header -->
         <div class="mb-8">
-          <h1 class="text-2xl font-bold text-white">Dashboard</h1>
-          <p class="mt-1 text-slate-400">{{ store.scheduleStats.scheduleName }} 的打卡統計總覽</p>
+          <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Dashboard</h1>
+          <p class="mt-1 text-slate-500 dark:text-slate-400">{{ store.scheduleStats.scheduleName }} 的打卡統計總覽</p>
         </div>
 
         <!-- Stats Cards -->
@@ -77,15 +77,15 @@ onMounted(() => {
         <div class="grid gap-6 lg:grid-cols-3">
           <!-- Chart -->
           <div class="lg:col-span-2">
-            <div class="rounded-2xl border border-white/5 bg-white/5 p-6 backdrop-blur-sm">
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
               <div class="mb-6 flex items-center justify-between">
                 <div>
-                  <h2 class="text-lg font-semibold text-white">每日打卡趨勢</h2>
-                  <p class="mt-1 text-sm text-slate-400">查看每日參與人數變化</p>
+                  <h2 class="text-lg font-semibold text-slate-800 dark:text-white">每日打卡趨勢</h2>
+                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">查看每日參與人數變化</p>
                 </div>
-                <div class="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-1.5">
+                <div class="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-1.5 dark:bg-slate-700">
                   <span class="h-2 w-2 rounded-full bg-violet-500"></span>
-                  <span class="text-xs text-slate-400">打卡人數</span>
+                  <span class="text-xs text-slate-600 dark:text-slate-300">打卡人數</span>
                 </div>
               </div>
               <div class="h-72">
@@ -97,19 +97,19 @@ onMounted(() => {
           <!-- Quick Actions -->
           <div class="space-y-6">
             <!-- Discord Link Card -->
-            <div class="overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-br from-indigo-600/20 to-violet-600/20 p-6">
-              <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/10">
-                <i class="bi bi-discord text-2xl text-violet-400"></i>
+            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-violet-50 to-indigo-50 p-6 dark:border-slate-700 dark:from-violet-900/30 dark:to-indigo-900/30">
+              <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm dark:bg-slate-800">
+                <i class="bi bi-discord text-2xl text-violet-600 dark:text-violet-400"></i>
               </div>
-              <h3 class="text-lg font-semibold text-white">Discord 頻道</h3>
-              <p class="mt-1 text-sm text-slate-400">
+              <h3 class="text-lg font-semibold text-slate-800 dark:text-white">Discord 頻道</h3>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
                 {{ store.scheduleStats.channelInfo?.channelName || '打卡回報區' }}
               </p>
               <a
                 :href="store.scheduleStats.channelInfo?.channelId ? `https://discord.com/channels/${store.scheduleStats.channelInfo.guildId}/${store.scheduleStats.channelInfo.channelId}` : '#'"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="mt-4 inline-flex items-center gap-2 rounded-lg bg-white/10 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/20"
+                class="mt-4 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-violet-700"
               >
                 前往頻道
                 <i class="bi bi-arrow-right"></i>
@@ -117,21 +117,21 @@ onMounted(() => {
             </div>
 
             <!-- Recent Activity -->
-            <div class="rounded-2xl border border-white/5 bg-white/5 p-6 backdrop-blur-sm">
-              <h3 class="mb-4 text-lg font-semibold text-white">最近打卡</h3>
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+              <h3 class="mb-4 text-lg font-semibold text-slate-800 dark:text-white">最近打卡</h3>
               <div class="space-y-3">
                 <div
                   v-for="day in store.scheduleStats.dailyStats.slice(-5).reverse()"
                   :key="day.dayLabel"
-                  class="flex items-center justify-between rounded-lg bg-white/5 p-3"
+                  class="flex items-center justify-between rounded-xl bg-slate-50 p-3 dark:bg-slate-700/50"
                 >
                   <div class="flex items-center gap-3">
-                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/20">
-                      <i class="bi bi-calendar-event text-sm text-violet-400"></i>
+                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900/50">
+                      <i class="bi bi-calendar-event text-sm text-violet-600 dark:text-violet-400"></i>
                     </div>
-                    <span class="text-sm font-medium text-white">{{ day.dayLabel }}</span>
+                    <span class="text-sm font-medium text-slate-700 dark:text-slate-200">{{ day.dayLabel }}</span>
                   </div>
-                  <span class="text-sm text-slate-400">{{ day.checkinCount }} 人</span>
+                  <span class="text-sm text-slate-500 dark:text-slate-400">{{ day.checkinCount }} 人</span>
                 </div>
               </div>
             </div>

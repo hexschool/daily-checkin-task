@@ -10,44 +10,38 @@ defineProps<{
 
 const colorStyles = {
   violet: {
-    bg: 'bg-violet-500/10',
-    icon: 'text-violet-400',
-    glow: 'shadow-violet-500/20',
+    bg: 'bg-violet-100 dark:bg-violet-900/50',
+    icon: 'text-violet-600 dark:text-violet-400',
+    value: 'text-violet-600 dark:text-violet-400',
   },
   emerald: {
-    bg: 'bg-emerald-500/10',
-    icon: 'text-emerald-400',
-    glow: 'shadow-emerald-500/20',
+    bg: 'bg-emerald-100 dark:bg-emerald-900/50',
+    icon: 'text-emerald-600 dark:text-emerald-400',
+    value: 'text-emerald-600 dark:text-emerald-400',
   },
   amber: {
-    bg: 'bg-amber-500/10',
-    icon: 'text-amber-400',
-    glow: 'shadow-amber-500/20',
+    bg: 'bg-amber-100 dark:bg-amber-900/50',
+    icon: 'text-amber-600 dark:text-amber-400',
+    value: 'text-amber-600 dark:text-amber-400',
   },
   rose: {
-    bg: 'bg-rose-500/10',
-    icon: 'text-rose-400',
-    glow: 'shadow-rose-500/20',
+    bg: 'bg-rose-100 dark:bg-rose-900/50',
+    icon: 'text-rose-600 dark:text-rose-400',
+    value: 'text-rose-600 dark:text-rose-400',
   },
 }
 </script>
 
 <template>
   <div
-    class="group relative overflow-hidden rounded-2xl border border-white/5 bg-white/5 p-6 backdrop-blur-sm transition-all duration-300 hover:border-white/10 hover:bg-white/10"
+    class="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
   >
-    <!-- Background Glow -->
-    <div
-      class="absolute -right-10 -top-10 h-32 w-32 rounded-full opacity-20 blur-3xl transition-opacity group-hover:opacity-30"
-      :class="colorStyles[color || 'violet'].bg"
-    ></div>
-
-    <div class="relative flex items-start justify-between">
+    <div class="flex items-start justify-between">
       <div>
-        <p class="text-sm font-medium text-slate-400">{{ title }}</p>
-        <p class="mt-2 text-3xl font-bold text-white">
+        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ title }}</p>
+        <p class="mt-2 text-3xl font-bold" :class="colorStyles[color || 'violet'].value">
           {{ value }}
-          <span v-if="unit" class="text-lg font-normal text-slate-500">{{ unit }}</span>
+          <span v-if="unit" class="text-lg font-normal text-slate-400">{{ unit }}</span>
         </p>
       </div>
       <div
