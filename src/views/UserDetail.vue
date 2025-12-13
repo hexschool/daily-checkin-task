@@ -32,7 +32,7 @@ onMounted(() => {
       <!-- Back Link -->
       <RouterLink
         :to="{ name: 'progress', params: { scheduleId } }"
-        class="mb-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-violet-600"
+        class="mb-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-800 dark:hover:text-slate-200"
       >
         <i class="bi bi-arrow-left"></i>
         返回進度追蹤

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useCheckinStore } from '@/stores/checkin'
 import { usePinnedStore } from '@/stores/pinned'
 import MainLayout from '@/components/layout/MainLayout.vue'
@@ -142,9 +142,14 @@ onMounted(() => {
                     <th
                       v-for="day in dayLabels"
                       :key="day"
-                      class="px-2 py-3 text-center text-xs font-medium text-slate-500 whitespace-nowrap dark:text-slate-400"
+                      class="px-2 py-3 text-center text-xs font-medium whitespace-nowrap"
                     >
-                      {{ day }}
+                      <RouterLink
+                        :to="{ name: 'day-detail', params: { scheduleId, dayLabel: day } }"
+                        class="text-slate-500 transition-colors hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                      >
+                        {{ day }}
+                      </RouterLink>
                     </th>
                   </tr>
                 </thead>
@@ -227,9 +232,14 @@ onMounted(() => {
                   <th
                     v-for="day in dayLabels"
                     :key="day"
-                    class="px-2 py-3 text-center text-xs font-medium text-slate-500 whitespace-nowrap dark:text-slate-400"
+                    class="px-2 py-3 text-center text-xs font-medium whitespace-nowrap"
                   >
-                    {{ day }}
+                    <RouterLink
+                      :to="{ name: 'day-detail', params: { scheduleId, dayLabel: day } }"
+                      class="text-slate-500 transition-colors hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                    >
+                      {{ day }}
+                    </RouterLink>
                   </th>
                 </tr>
               </thead>

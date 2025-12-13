@@ -45,7 +45,7 @@ function formatDateTime(dateString: string, timeString: string | null) {
             class="flex h-8 w-8 items-center justify-center rounded-lg"
             :class="
               detail.checkedIn
-                ? 'bg-violet-100 dark:bg-violet-900/50'
+                ? 'bg-slate-200 dark:bg-slate-600'
                 : 'bg-slate-100 dark:bg-slate-700'
             "
           >
@@ -53,7 +53,7 @@ function formatDateTime(dateString: string, timeString: string | null) {
               class="bi bi-calendar-event text-sm"
               :class="
                 detail.checkedIn
-                  ? 'text-violet-600 dark:text-violet-400'
+                  ? 'text-slate-700 dark:text-slate-300'
                   : 'text-slate-400 dark:text-slate-500'
               "
             ></i>
@@ -86,7 +86,7 @@ function formatDateTime(dateString: string, timeString: string | null) {
         <div class="ml-2 flex-shrink-0 text-right">
           <span
             v-if="detail.checkedIn"
-            class="text-sm text-emerald-600 dark:text-emerald-400"
+            class="text-sm text-slate-600 dark:text-slate-300"
           >
             {{ formatDateTime(detail.date, detail.checkinTime) }}
           </span>
