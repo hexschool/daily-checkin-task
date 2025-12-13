@@ -28,13 +28,13 @@ onMounted(() => {
 
 <template>
   <MainLayout>
-    <div class="p-6 lg:p-8">
+    <div class="p-8">
       <!-- Back Link -->
       <RouterLink
         :to="{ name: 'progress', params: { scheduleId } }"
-        class="mb-4 inline-flex items-center gap-1 text-slate-600 hover:text-slate-900"
+        class="mb-6 inline-flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-white"
       >
-        <i class="bi bi-chevron-left"></i>
+        <i class="bi bi-arrow-left"></i>
         返回進度追蹤
       </RouterLink>
 
@@ -49,7 +49,7 @@ onMounted(() => {
       <!-- Content -->
       <template v-else-if="store.currentUser">
         <!-- User Profile -->
-        <div class="mb-6">
+        <div class="mb-8">
           <UserProfile
             :user="store.currentUser"
             :total-days="store.scheduleStats?.dailyTasks"

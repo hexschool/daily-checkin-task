@@ -7,7 +7,7 @@ defineProps<{
 <template>
   <div class="flex items-center justify-center">
     <div
-      class="animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"
+      class="animate-spin rounded-full border-2 border-white/10 border-t-violet-500"
       :class="{
         'h-4 w-4': size === 'sm',
         'h-8 w-8': size === 'md' || !size,

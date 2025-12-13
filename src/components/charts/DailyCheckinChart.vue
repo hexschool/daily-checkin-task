@@ -25,17 +25,24 @@ const chartData = computed(() => ({
   labels: props.dailyStats.map((stat) => stat.dayLabel),
   datasets: [
     {
-      label: '每日任務',
+      label: '打卡人數',
       data: props.dailyStats.map((stat) => stat.checkinCount),
-      borderColor: '#3B82F6',
-      backgroundColor: 'rgba(59, 130, 246, 0.1)',
-      tension: 0.1,
+      borderColor: '#8B5CF6',
+      backgroundColor: (context: { chart: { ctx: CanvasRenderingContext2D } }) => {
+        const ctx = context.chart.ctx
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300)
+        gradient.addColorStop(0, 'rgba(139, 92, 246, 0.3)')
+        gradient.addColorStop(1, 'rgba(139, 92, 246, 0)')
+        return gradient
+      },
+      tension: 0.4,
       fill: true,
-      pointRadius: 4,
+      pointRadius: 0,
       pointHoverRadius: 6,
-      pointBackgroundColor: '#3B82F6',
-      pointBorderColor: '#fff',
-      pointBorderWidth: 2,
+      pointBackgroundColor: '#8B5CF6',
+      pointBorderColor: '#1E1B4B',
+      pointBorderWidth: 3,
+      borderWidth: 3,
     },
   ],
 }))
@@ -45,25 +52,25 @@ const chartOptions = {
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      display: true,
-      position: 'right' as const,
-      labels: {
-        usePointStyle: true,
-        pointStyle: 'rect',
-        padding: 20,
-      },
+      display: false,
     },
     tooltip: {
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      backgroundColor: 'rgba(15, 23, 42, 0.9)',
+      borderColor: 'rgba(139, 92, 246, 0.3)',
+      borderWidth: 1,
       padding: 12,
       titleFont: {
         size: 14,
+        weight: 600 as const,
       },
       bodyFont: {
         size: 13,
       },
+      titleColor: '#E2E8F0',
+      bodyColor: '#94A3B8',
+      displayColors: false,
       callbacks: {
-        label: (context: TooltipItem<'line'>) => `打卡人數: ${context.parsed.y ?? 0}`,
+        label: (context: TooltipItem<'line'>) => `${context.parsed.y ?? 0} 人打卡`,
       },
     },
   },
@@ -72,20 +79,32 @@ const chartOptions = {
       grid: {
         display: false,
       },
+      border: {
+        display: false,
+      },
       ticks: {
-        color: '#64748B',
+        color: '#475569',
         maxRotation: 0,
         autoSkip: true,
-        maxTicksLimit: 10,
+        maxTicksLimit: 8,
+        font: {
+          size: 11,
+        },
       },
     },
     y: {
       grid: {
-        color: 'rgba(0, 0, 0, 0.05)',
+        color: 'rgba(255, 255, 255, 0.05)',
+      },
+      border: {
+        display: false,
       },
       ticks: {
-        color: '#64748B',
-        stepSize: 20,
+        color: '#475569',
+        font: {
+          size: 11,
+        },
+        padding: 10,
       },
       min: 0,
     },

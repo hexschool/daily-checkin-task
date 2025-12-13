@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
-import { useRoute, RouterLink } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useCheckinStore } from '@/stores/checkin'
 import MainLayout from '@/components/layout/MainLayout.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
@@ -43,11 +43,11 @@ onMounted(() => {
 
 <template>
   <MainLayout>
-    <div class="p-6 lg:p-8">
+    <div class="p-8">
       <!-- Header -->
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold text-slate-800">每日任務列表</h1>
-        <p v-if="store.scheduleStats" class="text-slate-500">
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold text-white">參與者列表</h1>
+        <p v-if="store.scheduleStats" class="mt-1 text-slate-400">
           {{ store.scheduleStats.scheduleName }}
         </p>
       </div>
@@ -71,8 +71,8 @@ onMounted(() => {
 
       <!-- Content -->
       <template v-else>
-        <!-- User List -->
-        <div v-if="store.users.length > 0" class="space-y-3">
+        <!-- User Grid -->
+        <div v-if="store.users.length > 0" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <UserCard
             v-for="user in store.users"
             :key="user.discordUserId"
@@ -83,14 +83,19 @@ onMounted(() => {
         </div>
 
         <!-- Empty State -->
-        <div v-else class="rounded-lg bg-white py-12 text-center shadow-sm">
-          <p class="text-slate-500">
+        <div v-else class="rounded-2xl border border-white/5 bg-white/5 py-16 text-center">
+          <div class="mb-4 flex justify-center">
+            <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/5">
+              <i class="bi bi-search text-3xl text-slate-600"></i>
+            </div>
+          </div>
+          <p class="text-slate-400">
             {{ searchQuery ? '找不到符合的用戶' : '尚無參與者' }}
           </p>
         </div>
 
         <!-- Pagination -->
-        <div v-if="store.pagination && store.users.length > 0" class="mt-6">
+        <div v-if="store.pagination && store.users.length > 0" class="mt-8">
           <PaginationNav :pagination="store.pagination" @page-change="handlePageChange" />
         </div>
       </template>

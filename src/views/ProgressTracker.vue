@@ -13,23 +13,18 @@ const store = useCheckinStore()
 const scheduleId = computed(() => route.params.scheduleId as string)
 const isLoadingMore = ref(false)
 
-// 所有天數的標籤（從 dailyStats 獲取）
 const dayLabels = computed(() => {
   if (!store.scheduleStats?.dailyStats) return []
   return store.scheduleStats.dailyStats.map((stat) => stat.dayLabel)
 })
 
-// 載入初始資料
 async function loadData() {
-  // 先載入統計資料以獲取所有天數
   if (!store.scheduleStats) {
     await store.fetchScheduleStats(scheduleId.value)
   }
-  // 載入所有用戶（需要較大的 limit 以獲取完整的打卡狀態）
   await store.fetchUsers(scheduleId.value, { limit: 50 })
 }
 
-// 載入更多用戶
 async function loadMore() {
   if (isLoadingMore.value || !store.hasMorePages) return
   isLoadingMore.value = true
@@ -37,7 +32,6 @@ async function loadMore() {
   isLoadingMore.value = false
 }
 
-// 點擊用戶跳轉到詳情頁
 function goToUserDetail(discordUserId: string) {
   router.push({
     name: 'user-detail',
@@ -45,7 +39,6 @@ function goToUserDetail(discordUserId: string) {
   })
 }
 
-// 生成預設頭像
 function getDefaultAvatar(discordUserId: string) {
   const index = parseInt(discordUserId) % 5
   return `https://cdn.discordapp.com/embed/avatars/${index}.png`
@@ -58,9 +51,12 @@ onMounted(() => {
 
 <template>
   <MainLayout>
-    <div class="p-6 lg:p-8">
+    <div class="p-8">
       <!-- Header -->
-      <h1 class="mb-6 text-2xl font-bold text-slate-800">打卡進度追蹤</h1>
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold text-white">打卡進度追蹤</h1>
+        <p class="mt-1 text-slate-400">查看所有參與者的打卡狀況</p>
+      </div>
 
       <!-- Loading -->
       <div v-if="store.isLoading && store.users.length === 0" class="flex h-96 items-center justify-center">
@@ -73,28 +69,47 @@ onMounted(() => {
       <!-- Content -->
       <template v-else>
         <!-- Stats Summary -->
-        <div v-if="store.scheduleStats" class="mb-6 flex flex-wrap gap-4 text-sm text-slate-600">
-          <span>共 <strong class="text-slate-800">{{ store.scheduleStats.uniqueUsers }}</strong> 位參與者</span>
-          <span>|</span>
-          <span>累計 <strong class="text-slate-800">{{ store.scheduleStats.dailyTasks }}</strong> 天</span>
-          <span>|</span>
-          <span>總打卡 <strong class="text-slate-800">{{ store.scheduleStats.totalCheckins }}</strong> 次</span>
+        <div v-if="store.scheduleStats" class="mb-6 flex flex-wrap items-center gap-6">
+          <div class="flex items-center gap-2">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/20">
+              <i class="bi bi-people-fill text-sm text-violet-400"></i>
+            </div>
+            <span class="text-sm text-slate-400">
+              <strong class="text-white">{{ store.scheduleStats.uniqueUsers }}</strong> 位參與者
+            </span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/20">
+              <i class="bi bi-calendar-check text-sm text-emerald-400"></i>
+            </div>
+            <span class="text-sm text-slate-400">
+              累計 <strong class="text-white">{{ store.scheduleStats.dailyTasks }}</strong> 天
+            </span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/20">
+              <i class="bi bi-check2-all text-sm text-amber-400"></i>
+            </div>
+            <span class="text-sm text-slate-400">
+              總打卡 <strong class="text-white">{{ store.scheduleStats.totalCheckins }}</strong> 次
+            </span>
+          </div>
         </div>
 
         <!-- Table Container -->
-        <div class="overflow-hidden rounded-lg bg-white shadow-sm">
+        <div class="overflow-hidden rounded-2xl border border-white/5 bg-white/5 backdrop-blur-sm">
           <div class="overflow-x-auto">
             <table class="w-full min-w-max">
               <!-- Table Header -->
-              <thead class="bg-slate-50">
-                <tr>
-                  <th class="sticky left-0 z-10 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-600">
-                    用戶
+              <thead>
+                <tr class="border-b border-white/5">
+                  <th class="sticky left-0 z-10 bg-slate-900/90 px-6 py-4 text-left text-sm font-semibold text-slate-300 backdrop-blur-sm">
+                    參與者
                   </th>
                   <th
                     v-for="day in dayLabels"
                     :key="day"
-                    class="px-3 py-3 text-center text-xs font-semibold text-slate-600 whitespace-nowrap"
+                    class="px-3 py-4 text-center text-xs font-medium text-slate-400 whitespace-nowrap"
                   >
                     {{ day }}
                   </th>
@@ -102,24 +117,24 @@ onMounted(() => {
               </thead>
 
               <!-- Table Body -->
-              <tbody class="divide-y divide-slate-100">
+              <tbody class="divide-y divide-white/5">
                 <tr
                   v-for="user in store.users"
                   :key="user.discordUserId"
-                  class="cursor-pointer transition-colors hover:bg-blue-50"
+                  class="cursor-pointer transition-colors hover:bg-white/5"
                   @click="goToUserDetail(user.discordUserId)"
                 >
-                  <!-- User Info (Sticky Column) -->
-                  <td class="sticky left-0 z-10 bg-white px-4 py-3 group-hover:bg-blue-50">
+                  <!-- User Info -->
+                  <td class="sticky left-0 z-10 bg-slate-900/80 px-6 py-4 backdrop-blur-sm">
                     <div class="flex items-center gap-3">
                       <img
                         :src="user.avatarUrl || getDefaultAvatar(user.discordUserId)"
                         :alt="user.displayName"
-                        class="h-8 w-8 rounded-full object-cover"
+                        class="h-10 w-10 rounded-full object-cover ring-2 ring-white/10"
                         loading="lazy"
                       />
                       <div class="min-w-0">
-                        <p class="truncate text-sm font-medium text-slate-800">
+                        <p class="truncate text-sm font-medium text-white">
                           {{ user.displayName }}
                         </p>
                         <p class="truncate text-xs text-slate-500">
@@ -133,17 +148,17 @@ onMounted(() => {
                   <td
                     v-for="day in dayLabels"
                     :key="day"
-                    class="px-3 py-3 text-center"
+                    class="px-3 py-4 text-center"
                   >
                     <span
                       v-if="user.checkinStatus[day]"
-                      class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-600"
+                      class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400"
                     >
                       <i class="bi bi-check-lg"></i>
                     </span>
                     <span
                       v-else
-                      class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-slate-400"
+                      class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/5 text-slate-600"
                     >
                       <i class="bi bi-dash"></i>
                     </span>
@@ -154,9 +169,9 @@ onMounted(() => {
           </div>
 
           <!-- Load More -->
-          <div v-if="store.hasMorePages" class="border-t border-slate-100 p-4 text-center">
+          <div v-if="store.hasMorePages" class="border-t border-white/5 p-4 text-center">
             <button
-              class="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600 disabled:opacity-50"
+              class="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-violet-500 disabled:opacity-50"
               :disabled="isLoadingMore"
               @click="loadMore"
             >
@@ -169,9 +184,14 @@ onMounted(() => {
         <!-- Empty State -->
         <div
           v-if="store.users.length === 0"
-          class="rounded-lg bg-white py-12 text-center shadow-sm"
+          class="rounded-2xl border border-white/5 bg-white/5 py-16 text-center"
         >
-          <p class="text-slate-500">尚無參與者資料</p>
+          <div class="mb-4 flex justify-center">
+            <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/5">
+              <i class="bi bi-people text-3xl text-slate-600"></i>
+            </div>
+          </div>
+          <p class="text-slate-400">尚無參與者資料</p>
         </div>
       </template>
     </div>
