@@ -34,14 +34,7 @@ function formatDate(dateString: string) {
           <span class="rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-600">
             {{ day.checkinCount }} 人
           </span>
-          <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
+          <i class="bi bi-chevron-right text-gray-400"></i>
         </div>
       </RouterLink>
     </div>

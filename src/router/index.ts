@@ -7,7 +7,13 @@ const router = createRouter({
       path: '/:scheduleId',
       name: 'dashboard',
       component: () => import('@/views/ScheduleDashboard.vue'),
-      meta: { title: '打卡統計' },
+      meta: { title: 'Dashboard' },
+    },
+    {
+      path: '/:scheduleId/progress',
+      name: 'progress',
+      component: () => import('@/views/ProgressTracker.vue'),
+      meta: { title: '打卡進度追蹤' },
     },
     {
       path: '/:scheduleId/users',

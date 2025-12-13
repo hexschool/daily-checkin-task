@@ -40,28 +40,8 @@ function formatTime(timeString: string | null) {
             class="flex h-8 w-8 items-center justify-center rounded-full"
             :class="detail.checkedIn ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'"
           >
-            <svg
-              v-if="detail.checkedIn"
-              class="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-            <svg v-else class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <i v-if="detail.checkedIn" class="bi bi-check-lg"></i>
+            <i v-else class="bi bi-x-lg"></i>
           </div>
           <div>
             <RouterLink
