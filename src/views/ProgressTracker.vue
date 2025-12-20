@@ -85,7 +85,7 @@ onMounted(() => {
       </div>
 
       <!-- Loading -->
-      <div v-if="store.isLoading && store.users.length === 0" class="flex h-96 items-center justify-center">
+      <div v-if="store.isLoading && !store.scheduleStats" class="flex h-96 items-center justify-center">
         <LoadingSpinner size="lg" />
       </div>
 
@@ -93,9 +93,10 @@ onMounted(() => {
       <ErrorMessage v-else-if="store.error" :message="store.error" @retry="loadData" />
 
       <!-- Content -->
-      <template v-else>
-        <!-- Stats Summary -->
-        <div v-if="store.scheduleStats" class="mb-6 flex flex-wrap items-center gap-6">
+      <template v-else-if="store.scheduleStats">
+
+        <!-- Stats Summary (已由 ProgressHero 取代) -->
+        <div class="mb-6 hidden flex-wrap items-center gap-6">
           <div class="flex items-center gap-2">
             <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900/50">
               <i class="bi bi-people-fill text-sm text-violet-600 dark:text-violet-400"></i>

@@ -2,6 +2,7 @@
 import { onMounted, computed } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { useCheckinStore } from '@/stores/checkin'
+import { usePinnedStore } from '@/stores/pinned'
 import MainLayout from '@/components/layout/MainLayout.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import ErrorMessage from '@/components/common/ErrorMessage.vue'
@@ -10,11 +11,15 @@ import DailyCheckinChart from '@/components/charts/DailyCheckinChart.vue'
 
 const route = useRoute()
 const store = useCheckinStore()
+const pinnedStore = usePinnedStore()
 
 const scheduleId = computed(() => route.params.scheduleId as string)
+const pinnedUsers = computed(() => pinnedStore.getPinnedUserList(scheduleId.value))
 
 async function loadData() {
   await store.fetchScheduleStats(scheduleId.value)
+  // 載入釘選用戶資料
+  await pinnedStore.fetchPinnedUsers(scheduleId.value)
 }
 
 onMounted(() => {
@@ -35,22 +40,17 @@ onMounted(() => {
 
       <!-- Content -->
       <template v-else-if="store.scheduleStats">
-        <!-- Header -->
-        <div class="mb-6 sm:mb-8">
-          <h1 class="text-xl font-bold text-slate-800 dark:text-white sm:text-2xl">Dashboard</h1>
-          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400 sm:text-base">
-            {{ store.scheduleStats.scheduleName }} 的打卡統計總覽
-          </p>
-        </div>
-
-        <!-- Progress Hero (主要進度區塊) -->
-        <div class="mb-6 sm:mb-8">
+        <!-- Progress Hero (含標題與釘選用戶進度) -->
+        <div class="mb-6">
           <ProgressHero
+            title="Dashboard"
+            :subtitle="`${store.scheduleStats.scheduleName} 的打卡統計總覽`"
             :daily-tasks="store.scheduleStats.dailyTasks"
             :expected-tasks="store.scheduleStats.expectedTasks"
             :progress="store.scheduleStats.progress"
             :total-checkins="store.scheduleStats.totalCheckins"
             :unique-users="store.scheduleStats.uniqueUsers"
+            :pinned-users="pinnedUsers"
           />
         </div>
 
@@ -102,13 +102,8 @@ onMounted(() => {
                         class="bi bi-calendar-event text-xs text-violet-600 dark:text-violet-400 sm:text-sm"
                       ></i>
                     </div>
-                    <div class="min-w-0 flex-1">
-                      <span class="text-xs font-medium text-slate-700 dark:text-slate-200 sm:text-sm">
-                        {{ day.dayLabel }}：
-                      </span>
-                      <span
-                        class="block truncate text-xs text-slate-500 dark:text-slate-400 sm:inline"
-                      >
+                    <div class="min-w-0 flex-1 truncate">
+                      <span class="text-xs text-slate-500 dark:text-slate-400">
                         {{ day.threadTitle }}
                       </span>
                     </div>
