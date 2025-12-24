@@ -1,3 +1,6 @@
+// 打卡計算模式
+export type CheckinMode = 'standard' | 'extended' | 'all_period'
+
 // 排程統計
 export interface ScheduleStats {
   scheduleId: string
@@ -9,6 +12,8 @@ export interface ScheduleStats {
   uniqueUsers: number
   channelInfo: ChannelInfo
   dailyStats: DailyStat[]
+  checkinMode: CheckinMode
+  extendedHours?: number
 }
 
 export interface ChannelInfo {

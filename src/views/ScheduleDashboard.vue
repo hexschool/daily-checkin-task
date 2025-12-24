@@ -51,6 +51,8 @@ onMounted(() => {
             :total-checkins="store.scheduleStats.totalCheckins"
             :unique-users="store.scheduleStats.uniqueUsers"
             :pinned-users="pinnedUsers"
+            :checkin-mode="store.scheduleStats.checkinMode"
+            :extended-hours="store.scheduleStats.extendedHours"
           />
         </div>
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import type { CheckinMode } from '@/types/checkin'
 
 interface PinnedUser {
   discordUserId: string
@@ -17,7 +18,37 @@ const props = defineProps<{
   totalCheckins: number
   uniqueUsers: number
   pinnedUsers?: PinnedUser[]
+  checkinMode?: CheckinMode
+  extendedHours?: number
 }>()
+
+// 打卡模式顯示文字
+const checkinModeLabel = computed(() => {
+  switch (props.checkinMode) {
+    case 'standard':
+      return '標準模式'
+    case 'extended':
+      return '延時模式'
+    case 'all_period':
+      return '全期間模式'
+    default:
+      return '標準模式'
+  }
+})
+
+// 打卡模式描述
+const checkinModeDescription = computed(() => {
+  switch (props.checkinMode) {
+    case 'standard':
+      return '僅限貼文當天打卡'
+    case 'extended':
+      return `可在討論串的隔天，延後 ${props.extendedHours || 0} 小時內打卡`
+    case 'all_period':
+      return '活動期間內任何時段打卡皆可被計算'
+    default:
+      return '24 小時內有效'
+  }
+})
 
 // 計算進度條動畫延遲
 const progressWidth = computed(() => `${Math.min(props.progress, 100)}%`)
@@ -172,7 +203,7 @@ function hideTooltip() {
       </div>
 
       <!-- 統計數據 -->
-      <div class="grid grid-cols-2 gap-3 sm:gap-4">
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
         <div
           class="flex items-center gap-2 rounded-xl bg-white/80 p-3 dark:bg-slate-800/80 sm:gap-3 sm:p-4"
         >
@@ -204,6 +235,24 @@ function hideTooltip() {
               {{ uniqueUsers }}
               <span class="text-xs font-normal text-slate-400 sm:text-sm">人</span>
             </p>
+          </div>
+        </div>
+
+        <!-- 打卡模式 -->
+        <div
+          class="col-span-2 flex items-center gap-2 rounded-xl bg-white/80 p-3 dark:bg-slate-800/80 sm:col-span-1 sm:gap-3 sm:p-4"
+        >
+          <div
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-100 dark:bg-violet-900/50 sm:h-10 sm:w-10"
+          >
+            <i class="bi bi-clock-history text-base text-violet-600 dark:text-violet-400 sm:text-lg"></i>
+          </div>
+          <div class="min-w-0">
+            <p class="truncate text-xs text-slate-500 dark:text-slate-400">打卡模式</p>
+            <p class="text-base font-bold text-slate-800 dark:text-white sm:text-lg">
+              {{ checkinModeLabel }}
+            </p>
+            <p class="truncate text-xs text-slate-400">{{ checkinModeDescription }}</p>
           </div>
         </div>
       </div>
