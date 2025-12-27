@@ -137,7 +137,10 @@ onMounted(() => {
                 <!-- Table Header -->
                 <thead>
                   <tr class="border-b border-violet-100 bg-violet-50 dark:border-violet-800 dark:bg-violet-900/30">
-                    <th class="sticky left-0 z-10 w-[200px] min-w-[200px] max-w-[200px] bg-violet-50 px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:bg-violet-900/30 dark:text-slate-200">
+                    <th class="sticky left-0 z-10 w-10 min-w-10 bg-violet-50 px-2 py-3 text-center text-sm font-semibold text-slate-700 dark:bg-violet-900/30 dark:text-slate-200">
+                      #
+                    </th>
+                    <th class="sticky left-10 z-10 w-50 min-w-50 max-w-50 bg-violet-50 px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:bg-violet-900/30 dark:text-slate-200">
                       參與者
                     </th>
                     <th
@@ -158,13 +161,17 @@ onMounted(() => {
                 <!-- Table Body -->
                 <tbody class="divide-y divide-violet-100 dark:divide-violet-800">
                   <tr
-                    v-for="user in pinnedUsers"
+                    v-for="(user, index) in pinnedUsers"
                     :key="user.discordUserId"
-                    class="cursor-pointer transition-colors hover:bg-violet-50 dark:hover:bg-violet-900/20"
+                    class="group cursor-pointer transition-colors hover:bg-violet-50 dark:hover:bg-violet-900/20"
                     @click="goToUserDetail(user.discordUserId)"
                   >
+                    <!-- Index -->
+                    <td class="sticky left-0 z-10 w-10 min-w-10 bg-white px-2 py-3 text-center text-sm text-slate-500 transition-colors group-hover:bg-violet-50 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-violet-900/20">
+                      {{ index + 1 }}
+                    </td>
                     <!-- User Info -->
-                    <td class="sticky left-0 z-10 w-[200px] min-w-[200px] max-w-[200px] px-4 py-3">
+                    <td class="sticky left-10 z-10 w-50 min-w-50 max-w-50 bg-white px-4 py-3 transition-colors group-hover:bg-violet-50 dark:bg-slate-800 dark:group-hover:bg-violet-900/20">
                       <div class="flex items-center gap-2">
                         <button
                           class="flex-shrink-0 rounded-lg p-1.5 text-violet-500 transition-colors hover:bg-violet-100 dark:hover:bg-violet-900/50"
@@ -227,7 +234,10 @@ onMounted(() => {
               <!-- Table Header -->
               <thead>
                 <tr class="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
-                  <th class="sticky left-0 z-10 w-[200px] min-w-[200px] max-w-[200px] bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                  <th class="sticky left-0 z-10 w-10 min-w-10 bg-slate-50 px-2 py-3 text-center text-sm font-semibold text-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                    #
+                  </th>
+                  <th class="sticky left-10 z-10 w-50 min-w-50 max-w-50 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:bg-slate-900 dark:text-slate-200">
                     參與者
                   </th>
                   <th
@@ -248,13 +258,17 @@ onMounted(() => {
               <!-- Table Body -->
               <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
                 <tr
-                  v-for="user in store.users"
+                  v-for="(user, index) in store.users"
                   :key="user.discordUserId"
-                  class="cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50"
+                  class="group cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50"
                   @click="goToUserDetail(user.discordUserId)"
                 >
+                  <!-- Index -->
+                  <td class="sticky left-0 z-10 w-10 min-w-10 bg-white px-2 py-3 text-center text-sm text-slate-500 transition-colors group-hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-slate-700/50">
+                    {{ index + 1 }}
+                  </td>
                   <!-- User Info -->
-                  <td class="sticky left-0 z-10 w-[200px] min-w-[200px] max-w-[200px] px-4 py-3">
+                  <td class="sticky left-10 z-10 w-50 min-w-50 max-w-50 bg-white px-4 py-3 transition-colors group-hover:bg-slate-50 dark:bg-slate-800 dark:group-hover:bg-slate-700/50">
                     <div class="flex items-center gap-2">
                       <button
                         class="flex-shrink-0 rounded-lg p-1.5 transition-colors"
