@@ -2,7 +2,7 @@
 import { onMounted, computed } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { useCheckinStore } from '@/stores/checkin'
-import MainLayout from '@/components/layout/MainLayout.vue'
+import AppShell from '@/components/layout/AppShell.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import ErrorMessage from '@/components/common/ErrorMessage.vue'
 import UserProfile from '@/components/user/UserProfile.vue'
@@ -27,41 +27,39 @@ onMounted(() => {
 </script>
 
 <template>
-  <MainLayout>
-    <div class="p-8">
-      <!-- Back Link -->
-      <RouterLink
-        :to="{ name: 'progress', params: { scheduleId } }"
-        class="mb-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-800 dark:hover:text-slate-200"
-      >
-        <i class="bi bi-arrow-left"></i>
-        返回進度追蹤
-      </RouterLink>
+  <AppShell>
+    <!-- Back Link -->
+    <RouterLink
+      :to="{ name: 'friends', params: { scheduleId } }"
+      class="mb-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-800 dark:hover:text-slate-200"
+    >
+      <i class="bi bi-arrow-left"></i>
+      返回好友
+    </RouterLink>
 
-      <!-- Loading -->
-      <div v-if="store.isLoading && !store.currentUser" class="flex h-96 items-center justify-center">
-        <LoadingSpinner size="lg" />
+    <!-- Loading -->
+    <div v-if="store.isLoading && !store.currentUser" class="flex h-96 items-center justify-center">
+      <LoadingSpinner size="lg" />
+    </div>
+
+    <!-- Error -->
+    <ErrorMessage v-else-if="store.error" :message="store.error" @retry="loadData" />
+
+    <!-- Content -->
+    <template v-else-if="store.currentUser">
+      <!-- User Profile -->
+      <div class="mb-8">
+        <UserProfile
+          :user="store.currentUser"
+          :total-days="store.scheduleStats?.dailyTasks"
+        />
       </div>
 
-      <!-- Error -->
-      <ErrorMessage v-else-if="store.error" :message="store.error" @retry="loadData" />
-
-      <!-- Content -->
-      <template v-else-if="store.currentUser">
-        <!-- User Profile -->
-        <div class="mb-8">
-          <UserProfile
-            :user="store.currentUser"
-            :total-days="store.scheduleStats?.dailyTasks"
-          />
-        </div>
-
-        <!-- Checkin Status List -->
-        <CheckinStatusList
-          :details="store.currentUser.checkinDetails"
-          :schedule-id="scheduleId"
-        />
-      </template>
-    </div>
-  </MainLayout>
+      <!-- Checkin Status List -->
+      <CheckinStatusList
+        :details="store.currentUser.checkinDetails"
+        :schedule-id="scheduleId"
+      />
+    </template>
+  </AppShell>
 </template>

@@ -5,21 +5,27 @@ const router = createRouter({
   routes: [
     {
       path: '/:scheduleId',
-      name: 'dashboard',
-      component: () => import('@/views/ScheduleDashboard.vue'),
-      meta: { title: 'Dashboard' },
+      name: 'my-journey',
+      component: () => import('@/views/MyJourney.vue'),
+      meta: { title: '我的旅程' },
     },
     {
-      path: '/:scheduleId/progress',
-      name: 'progress',
-      component: () => import('@/views/ProgressTracker.vue'),
-      meta: { title: '打卡進度追蹤' },
+      path: '/:scheduleId/calendar',
+      name: 'calendar',
+      component: () => import('@/views/CalendarView.vue'),
+      meta: { title: '打卡日曆' },
     },
     {
-      path: '/:scheduleId/users',
-      name: 'users',
-      component: () => import('@/views/UserList.vue'),
-      meta: { title: '參與者列表' },
+      path: '/:scheduleId/leaderboard',
+      name: 'leaderboard',
+      component: () => import('@/views/LeaderboardView.vue'),
+      meta: { title: '排行榜' },
+    },
+    {
+      path: '/:scheduleId/friends',
+      name: 'friends',
+      component: () => import('@/views/FriendsView.vue'),
+      meta: { title: '好友' },
     },
     {
       path: '/:scheduleId/users/:discordUserId',
@@ -32,6 +38,22 @@ const router = createRouter({
       name: 'day-detail',
       component: () => import('@/views/DayDetail.vue'),
       meta: { title: '單日詳情' },
+    },
+    // 舊路由相容
+    {
+      path: '/:scheduleId/progress',
+      redirect: (to) => ({
+        name: 'leaderboard',
+        params: { scheduleId: to.params.scheduleId },
+      }),
+    },
+    {
+      path: '/:scheduleId/users',
+      name: 'users-redirect',
+      redirect: (to) => ({
+        name: 'friends',
+        params: { scheduleId: to.params.scheduleId },
+      }),
     },
     {
       path: '/:pathMatch(.*)*',

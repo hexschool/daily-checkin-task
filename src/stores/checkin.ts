@@ -16,6 +16,7 @@ export const useCheckinStore = defineStore('checkin', () => {
   const scheduleStats = ref<ScheduleStats | null>(null)
   const users = ref<UserCheckinItem[]>([])
   const currentUser = ref<UserDetail | null>(null)
+  const myUserDetail = ref<UserDetail | null>(null)
   const currentDayDetail = ref<DayDetail | null>(null)
   const pagination = ref<Pagination | null>(null)
   const searchResults = ref<SearchResult[]>([])
@@ -119,6 +120,14 @@ export const useCheckinStore = defineStore('checkin', () => {
     }
   }
 
+  async function fetchMyUserDetail(scheduleId: string, discordUserId: string) {
+    try {
+      myUserDetail.value = await checkinApi.getUserDetail(scheduleId, discordUserId)
+    } catch (e) {
+      console.error('Failed to fetch my user detail:', e)
+    }
+  }
+
   function clearError() {
     error.value = null
   }
@@ -131,6 +140,7 @@ export const useCheckinStore = defineStore('checkin', () => {
     scheduleStats.value = null
     users.value = []
     currentUser.value = null
+    myUserDetail.value = null
     currentDayDetail.value = null
     pagination.value = null
     searchResults.value = []
@@ -143,6 +153,7 @@ export const useCheckinStore = defineStore('checkin', () => {
     scheduleStats,
     users,
     currentUser,
+    myUserDetail,
     currentDayDetail,
     pagination,
     searchResults,
@@ -158,6 +169,7 @@ export const useCheckinStore = defineStore('checkin', () => {
     fetchUsers,
     fetchMoreUsers,
     fetchUserDetail,
+    fetchMyUserDetail,
     fetchDayDetail,
     searchUsers,
     clearError,

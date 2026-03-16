@@ -2,7 +2,7 @@
 import { onMounted, computed } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { useCheckinStore } from '@/stores/checkin'
-import MainLayout from '@/components/layout/MainLayout.vue'
+import AppShell from '@/components/layout/AppShell.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import ErrorMessage from '@/components/common/ErrorMessage.vue'
 import DayHeader from '@/components/day/DayHeader.vue'
@@ -24,38 +24,36 @@ onMounted(() => {
 </script>
 
 <template>
-  <MainLayout>
-    <div class="p-8">
-      <!-- Back Link -->
-      <RouterLink
-        :to="{ name: 'dashboard', params: { scheduleId } }"
-        class="mb-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-violet-600"
-      >
-        <i class="bi bi-arrow-left"></i>
-        返回 Dashboard
-      </RouterLink>
+  <AppShell>
+    <!-- Back Link -->
+    <RouterLink
+      :to="{ name: 'calendar', params: { scheduleId } }"
+      class="mb-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-violet-600"
+    >
+      <i class="bi bi-arrow-left"></i>
+      返回日曆
+    </RouterLink>
 
-      <!-- Loading -->
-      <div v-if="store.isLoading && !store.currentDayDetail" class="flex h-96 items-center justify-center">
-        <LoadingSpinner size="lg" />
+    <!-- Loading -->
+    <div v-if="store.isLoading && !store.currentDayDetail" class="flex h-96 items-center justify-center">
+      <LoadingSpinner size="lg" />
+    </div>
+
+    <!-- Error -->
+    <ErrorMessage v-else-if="store.error" :message="store.error" @retry="loadData" />
+
+    <!-- Content -->
+    <template v-else-if="store.currentDayDetail">
+      <!-- Day Header -->
+      <div class="mb-8">
+        <DayHeader :day-detail="store.currentDayDetail" />
       </div>
 
-      <!-- Error -->
-      <ErrorMessage v-else-if="store.error" :message="store.error" @retry="loadData" />
-
-      <!-- Content -->
-      <template v-else-if="store.currentDayDetail">
-        <!-- Day Header -->
-        <div class="mb-8">
-          <DayHeader :day-detail="store.currentDayDetail" />
-        </div>
-
-        <!-- Checkin User Grid -->
-        <CheckinUserGrid
-          :users="store.currentDayDetail.checkinUsers"
-          :schedule-id="scheduleId"
-        />
-      </template>
-    </div>
-  </MainLayout>
+      <!-- Checkin User Grid -->
+      <CheckinUserGrid
+        :users="store.currentDayDetail.checkinUsers"
+        :schedule-id="scheduleId"
+      />
+    </template>
+  </AppShell>
 </template>

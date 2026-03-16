@@ -147,3 +147,29 @@ export interface UserQueryParams {
   limit?: number
   search?: string
 }
+
+// 遊戲化系統
+export interface StreakResult {
+  currentStreak: number
+  longestStreak: number
+}
+
+export type AchievementTier = 'bronze' | 'silver' | 'gold' | 'diamond'
+
+export interface Achievement {
+  id: string
+  title: string
+  description: string
+  icon: string
+  tier: AchievementTier
+  unlocked: boolean
+  xpReward: number
+}
+
+export interface LevelInfo {
+  level: number
+  title: string
+  completionRate: number
+  currentXP: number
+  totalXP: number
+}
