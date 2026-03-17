@@ -9,12 +9,13 @@ import AchievementList from '@/components/gamification/AchievementList.vue'
 import LevelProgress from '@/components/gamification/LevelProgress.vue'
 import ContributionHeatmap from '@/components/gamification/ContributionHeatmap.vue'
 import { useCheckinStore } from '@/stores/checkin'
+import { checkinApi } from '@/api/checkin'
 import { useIdentityStore } from '@/stores/identity'
 import { usePinnedStore } from '@/stores/pinned'
 import { useStreaks } from '@/composables/useStreaks'
 import { useAchievements } from '@/composables/useAchievements'
 import { useLevel } from '@/composables/useLevel'
-import type { SearchResult } from '@/types/checkin'
+import type { UserCheckinItem } from '@/types/checkin'
 
 const route = useRoute()
 const checkinStore = useCheckinStore()
@@ -25,38 +26,57 @@ const scheduleId = computed(() => route.params.scheduleId as string)
 const myUserId = computed(() => identityStore.getMyUserId(scheduleId.value))
 const myUser = computed(() => checkinStore.myUserDetail)
 
-// 身份搜尋
+// 身份搜尋 + 名單
 const identitySearch = ref('')
-const identityResults = ref<SearchResult[]>([])
+const allUsers = ref<UserCheckinItem[]>([])
+const isLoadingUsers = ref(false)
 const isSearching = ref(false)
+const searchResults = ref<UserCheckinItem[]>([])
 
-async function searchIdentity() {
-  if (!identitySearch.value.trim()) {
-    identityResults.value = []
-    return
+const displayUsers = computed(() => {
+  if (identitySearch.value.trim() && searchResults.value.length > 0) {
+    return searchResults.value
   }
-  isSearching.value = true
+  return allUsers.value
+})
+
+async function loadAllUsers() {
+  isLoadingUsers.value = true
   try {
-    const response = await checkinStore.searchUsers(scheduleId.value, identitySearch.value, 5)
-    identityResults.value = response.results
+    const response = await checkinApi.getUsers(scheduleId.value, { limit: 100 })
+    allUsers.value = response.users
   } catch {
-    identityResults.value = []
+    allUsers.value = []
   } finally {
-    isSearching.value = false
+    isLoadingUsers.value = false
   }
 }
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
 watch(identitySearch, () => {
   if (searchTimeout) clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(searchIdentity, 300)
+  searchTimeout = setTimeout(async () => {
+    if (!identitySearch.value.trim()) {
+      searchResults.value = []
+      return
+    }
+    isSearching.value = true
+    try {
+      const response = await checkinApi.getUsers(scheduleId.value, { search: identitySearch.value, limit: 50 })
+      searchResults.value = response.users
+    } catch {
+      searchResults.value = []
+    } finally {
+      isSearching.value = false
+    }
+  }, 300)
 })
 
-async function selectIdentity(result: SearchResult) {
-  identityStore.setMyIdentity(scheduleId.value, result.discordUserId)
+async function selectIdentity(user: UserCheckinItem) {
+  identityStore.setMyIdentity(scheduleId.value, user.discordUserId)
   identitySearch.value = ''
-  identityResults.value = []
-  await checkinStore.fetchMyUserDetail(scheduleId.value, result.discordUserId)
+  searchResults.value = []
+  await checkinStore.fetchMyUserDetail(scheduleId.value, user.discordUserId)
 }
 
 function clearIdentity() {
@@ -130,8 +150,10 @@ onMounted(async () => {
   await checkinStore.fetchScheduleStats(scheduleId.value)
   if (myUserId.value) {
     await checkinStore.fetchMyUserDetail(scheduleId.value, myUserId.value)
+    await pinnedStore.fetchPinnedUsers(scheduleId.value)
+  } else {
+    await loadAllUsers()
   }
-  await pinnedStore.fetchPinnedUsers(scheduleId.value)
 })
 </script>
 
@@ -183,47 +205,65 @@ onMounted(async () => {
       </div>
 
       <!-- 身份搜尋引導（未設定時） -->
-      <div v-else class="rounded-2xl border-2 border-dashed border-violet-300 bg-violet-50/50 p-8 text-center dark:border-violet-700 dark:bg-violet-900/20">
-        <i class="bi bi-person-badge text-4xl text-violet-400"></i>
-        <h2 class="mt-3 text-lg font-bold text-slate-800 dark:text-white">找到你自己</h2>
-        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">搜尋你的 Discord 帳號，開啟個人化旅程</p>
+      <div v-else class="rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+        <!-- Header -->
+        <div class="border-b border-slate-100 p-6 text-center dark:border-slate-700">
+          <i class="bi bi-person-badge text-4xl text-violet-400"></i>
+          <h2 class="mt-3 text-lg font-bold text-slate-800 dark:text-white">找到你自己</h2>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">從列表中找到自己，點擊「這是我」開啟個人化旅程</p>
 
-        <div class="relative mx-auto mt-4 max-w-sm">
-          <input
-            v-model="identitySearch"
-            type="text"
-            placeholder="輸入你的暱稱或 Discord ID..."
-            class="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm text-slate-800 placeholder-slate-400 transition-colors focus:border-violet-500 focus:ring-1 focus:ring-violet-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
-          />
-          <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-
-          <!-- 搜尋結果 -->
-          <div
-            v-if="identityResults.length > 0"
-            class="absolute left-0 right-0 top-full z-10 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800"
-          >
+          <!-- 搜尋框 -->
+          <div class="relative mx-auto mt-4 max-w-sm">
+            <input
+              v-model="identitySearch"
+              type="text"
+              placeholder="搜尋暱稱或 Discord ID..."
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-10 text-sm text-slate-800 placeholder-slate-400 transition-colors focus:border-violet-500 focus:bg-white focus:ring-1 focus:ring-violet-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:focus:bg-slate-800"
+            />
+            <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
             <button
-              v-for="result in identityResults"
-              :key="result.discordUserId"
-              class="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-700"
-              @click="selectIdentity(result)"
+              v-if="identitySearch"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white"
+              @click="identitySearch = ''; searchResults = []"
             >
-              <img
-                :src="avatarUrl(result.avatarUrl)"
-                :alt="result.displayName"
-                class="h-8 w-8 rounded-full"
-              />
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-sm font-medium text-slate-800 dark:text-white">{{ result.displayName }}</p>
-                <p class="truncate text-xs text-slate-500">@{{ result.username }}</p>
-              </div>
-              <span class="text-xs text-slate-400">{{ result.totalCheckinDays }} 天</span>
+              <i class="bi bi-x-lg text-sm"></i>
             </button>
           </div>
         </div>
 
-        <div v-if="isSearching" class="mt-3">
-          <LoadingSpinner size="sm" />
+        <!-- 用戶名單（可捲動） -->
+        <div class="max-h-80 overflow-y-auto">
+          <div v-if="isSearching || isLoadingUsers" class="flex justify-center py-8">
+            <LoadingSpinner size="sm" />
+          </div>
+
+          <div v-else-if="displayUsers.length === 0 && identitySearch.trim()" class="p-8 text-center">
+            <i class="bi bi-search text-2xl text-slate-300 dark:text-slate-600"></i>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">找不到「{{ identitySearch }}」</p>
+          </div>
+
+          <div
+            v-for="user in displayUsers"
+            :key="user.discordUserId"
+            class="flex items-center gap-3 border-b border-slate-50 px-5 py-3 last:border-0 dark:border-slate-700/30"
+          >
+            <img
+              :src="avatarUrl(user.avatarUrl)"
+              :alt="user.displayName"
+              class="h-10 w-10 shrink-0 rounded-full ring-1 ring-slate-100 dark:ring-slate-700"
+            />
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-medium text-slate-800 dark:text-white">{{ user.displayName }}</p>
+              <p class="truncate text-xs text-slate-500 dark:text-slate-400">@{{ user.username }}</p>
+            </div>
+            <span class="shrink-0 text-xs text-slate-400">{{ user.totalCheckinDays }} 天</span>
+            <button
+              @click="selectIdentity(user)"
+              class="shrink-0 rounded-lg bg-violet-100 px-3 py-1.5 text-xs font-medium text-violet-600 transition-colors hover:bg-violet-200 dark:bg-violet-900/40 dark:text-violet-400 dark:hover:bg-violet-900/60"
+            >
+              這是我
+            </button>
+          </div>
         </div>
       </div>
 
@@ -272,12 +312,19 @@ onMounted(async () => {
       </div>
 
       <!-- 熱力圖 -->
-      <ContributionHeatmap
-        :daily-stats="checkinStore.scheduleStats.dailyStats"
-        :checkin-status="myUser ? myCheckinStatus : undefined"
-        :clickable="true"
-        @day-click="$router.push({ name: 'day-detail', params: { scheduleId, dayLabel: $event } })"
-      />
+      <div>
+        <h3 class="mb-3 font-semibold text-slate-800 dark:text-white">
+          <i class="bi bi-calendar3 mr-2 text-violet-500"></i>
+          打卡日曆
+        </h3>
+        <ContributionHeatmap
+          :daily-stats="checkinStore.scheduleStats.dailyStats"
+          :checkin-status="myUser ? myCheckinStatus : undefined"
+          :clickable="true"
+          @day-click="$router.push({ name: 'day-detail', params: { scheduleId, dayLabel: $event } })"
+        />
+        <p class="mt-2 text-right text-xs text-slate-400 dark:text-slate-500">資料每小時更新一次</p>
+      </div>
 
       <!-- 成就徽章 -->
       <AchievementList v-if="myUser && achievements.length" :achievements="achievements" />
