@@ -16,6 +16,25 @@ const identityStore = useIdentityStore()
 const scheduleId = computed(() => route.params.scheduleId as string)
 const myUserId = computed(() => identityStore.getMyUserId(scheduleId.value))
 
+// 打卡模式
+const checkinModeLabel = computed(() => {
+  switch (checkinStore.scheduleStats?.checkinMode) {
+    case 'standard': return '標準模式'
+    case 'extended': return '延時模式'
+    case 'all_period': return '全期間模式'
+    default: return '標準模式'
+  }
+})
+
+const checkinModeDescription = computed(() => {
+  switch (checkinStore.scheduleStats?.checkinMode) {
+    case 'standard': return '僅限貼文當天打卡'
+    case 'extended': return `可在討論串的隔天，延後 ${checkinStore.scheduleStats?.extendedHours || 0} 小時內打卡`
+    case 'all_period': return '活動期間內任何時段打卡皆可被計算'
+    default: return '24 小時內有效'
+  }
+})
+
 // 選中的日期
 const selectedDay = ref<DailyStat | null>(null)
 
@@ -76,6 +95,15 @@ onMounted(async () => {
         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
           {{ checkinStore.scheduleStats.scheduleName }}
         </p>
+      </div>
+
+      <!-- 打卡模式說明 -->
+      <div class="flex items-start gap-3 rounded-xl border border-violet-100 bg-violet-50/50 px-4 py-3 dark:border-violet-800 dark:bg-violet-900/20">
+        <i class="bi bi-clock-history mt-0.5 text-violet-500"></i>
+        <div>
+          <p class="text-sm font-medium text-slate-700 dark:text-slate-200">{{ checkinModeLabel }}</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400">{{ checkinModeDescription }}</p>
+        </div>
       </div>
 
       <!-- 切換：個人 / 全局 -->
