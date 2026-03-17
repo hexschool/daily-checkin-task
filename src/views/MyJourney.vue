@@ -318,8 +318,10 @@ onMounted(async () => {
           打卡日曆
         </h3>
         <ContributionHeatmap
+          variant="strip"
           :daily-stats="checkinStore.scheduleStats.dailyStats"
           :checkin-status="myUser ? myCheckinStatus : undefined"
+          :expected-tasks="checkinStore.scheduleStats.expectedTasks"
           :clickable="true"
           @day-click="$router.push({ name: 'day-detail', params: { scheduleId, dayLabel: $event } })"
         />

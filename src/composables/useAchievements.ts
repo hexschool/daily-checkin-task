@@ -24,17 +24,17 @@ const ACHIEVEMENT_DEFS: Omit<Achievement, 'unlocked'>[] = [
     xpReward: 20,
   },
   {
-    id: 'streak-7',
-    title: '一週戰士',
-    description: '連續打卡 7 天',
+    id: 'streak-5',
+    title: '穩定輸出',
+    description: '連續打卡 5 天',
     icon: 'bi-fire',
     tier: 'silver',
     xpReward: 30,
   },
   {
-    id: 'streak-14',
-    title: '兩週鐵人',
-    description: '連續打卡 14 天',
+    id: 'streak-10',
+    title: '打卡鐵人',
+    description: '連續打卡 10 天',
     icon: 'bi-fire',
     tier: 'gold',
     xpReward: 50,
@@ -71,10 +71,10 @@ function checkUnlocked(def: Omit<Achievement, 'unlocked'>, input: AchievementInp
       return input.totalCheckinDays >= 1
     case 'streak-3':
       return input.longestStreak >= 3
-    case 'streak-7':
-      return input.longestStreak >= 7
-    case 'streak-14':
-      return input.longestStreak >= 14
+    case 'streak-5':
+      return input.longestStreak >= 5
+    case 'streak-10':
+      return input.longestStreak >= 10
     case 'half-way':
       return input.completionRate >= 50
     case 'almost-there':

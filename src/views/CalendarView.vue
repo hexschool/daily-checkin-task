@@ -113,10 +113,12 @@ onMounted(async () => {
         </span>
       </div>
 
-      <!-- 完整熱力圖 -->
+      <!-- 熱力圖 -->
       <ContributionHeatmap
+        variant="strip"
         :daily-stats="checkinStore.scheduleStats.dailyStats"
         :checkin-status="myCheckinStatus"
+        :expected-tasks="checkinStore.scheduleStats.expectedTasks"
         :clickable="true"
         @day-click="handleDayClick"
       />

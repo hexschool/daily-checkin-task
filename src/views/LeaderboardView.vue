@@ -188,17 +188,15 @@ onMounted(async () => {
               <button
                 v-if="user.discordUserId !== myUserId"
                 @click.prevent="setAsMe(user.discordUserId)"
-                class="rounded-lg p-2 text-slate-300 transition-colors hover:bg-violet-100 hover:text-violet-500 dark:hover:bg-violet-900/30"
-                title="設為自己"
+                class="shrink-0 rounded-lg border border-slate-200 px-2.5 py-1 text-xs text-slate-500 transition-colors hover:border-violet-400 hover:text-violet-600 dark:border-slate-600 dark:text-slate-400 dark:hover:border-violet-500 dark:hover:text-violet-400"
               >
-                <i class="bi bi-person-plus"></i>
+                這是我
               </button>
               <span
                 v-else
-                class="rounded-lg p-2 text-violet-500"
-                title="這是你"
+                class="shrink-0 rounded-lg border border-violet-200 bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-600 dark:border-violet-700 dark:bg-violet-900/30 dark:text-violet-400"
               >
-                <i class="bi bi-person-check-fill"></i>
+                你本人
               </span>
             </div>
           </div>
@@ -222,11 +220,11 @@ onMounted(async () => {
             <button
               v-if="topThree[1]!.discordUserId !== myUserId"
               @click="setAsMe(topThree[1]!.discordUserId)"
-              class="mt-1 rounded-md px-2 py-0.5 text-xs text-slate-400 transition-colors hover:bg-violet-100 hover:text-violet-500 dark:hover:bg-violet-900/30"
+              class="mt-1 rounded-md border border-slate-200 px-2 py-0.5 text-xs text-slate-400 transition-colors hover:border-violet-400 hover:text-violet-600 dark:border-slate-600 dark:hover:border-violet-500 dark:hover:text-violet-400"
             >
-              <i class="bi bi-person-plus mr-1"></i>我
+              這是我
             </button>
-            <span v-else class="mt-1 text-xs text-violet-500"><i class="bi bi-person-check-fill mr-1"></i>你</span>
+            <span v-else class="mt-1 rounded-md border border-violet-200 bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-600 dark:border-violet-700 dark:bg-violet-900/30 dark:text-violet-400">你本人</span>
             <div class="mt-1 flex h-20 w-full items-end justify-center rounded-t-xl bg-slate-200 dark:bg-slate-700">
               <span class="pb-2 text-2xl font-bold text-slate-500 dark:text-slate-400">2</span>
             </div>
@@ -248,11 +246,11 @@ onMounted(async () => {
             <button
               v-if="topThree[0]!.discordUserId !== myUserId"
               @click="setAsMe(topThree[0]!.discordUserId)"
-              class="mt-1 rounded-md px-2 py-0.5 text-xs text-slate-400 transition-colors hover:bg-violet-100 hover:text-violet-500 dark:hover:bg-violet-900/30"
+              class="mt-1 rounded-md border border-slate-200 px-2 py-0.5 text-xs text-slate-400 transition-colors hover:border-violet-400 hover:text-violet-600 dark:border-slate-600 dark:hover:border-violet-500 dark:hover:text-violet-400"
             >
-              <i class="bi bi-person-plus mr-1"></i>我
+              這是我
             </button>
-            <span v-else class="mt-1 text-xs text-violet-500"><i class="bi bi-person-check-fill mr-1"></i>你</span>
+            <span v-else class="mt-1 rounded-md border border-violet-200 bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-600 dark:border-violet-700 dark:bg-violet-900/30 dark:text-violet-400">你本人</span>
             <div class="mt-1 flex h-28 w-full items-end justify-center rounded-t-xl bg-amber-100 dark:bg-amber-900/40">
               <span class="pb-2 text-3xl font-bold text-amber-600 dark:text-amber-400">1</span>
             </div>
@@ -271,11 +269,11 @@ onMounted(async () => {
             <button
               v-if="topThree[2]!.discordUserId !== myUserId"
               @click="setAsMe(topThree[2]!.discordUserId)"
-              class="mt-1 rounded-md px-2 py-0.5 text-xs text-slate-400 transition-colors hover:bg-violet-100 hover:text-violet-500 dark:hover:bg-violet-900/30"
+              class="mt-1 rounded-md border border-slate-200 px-2 py-0.5 text-xs text-slate-400 transition-colors hover:border-violet-400 hover:text-violet-600 dark:border-slate-600 dark:hover:border-violet-500 dark:hover:text-violet-400"
             >
-              <i class="bi bi-person-plus mr-1"></i>我
+              這是我
             </button>
-            <span v-else class="mt-1 text-xs text-violet-500"><i class="bi bi-person-check-fill mr-1"></i>你</span>
+            <span v-else class="mt-1 rounded-md border border-violet-200 bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-600 dark:border-violet-700 dark:bg-violet-900/30 dark:text-violet-400">你本人</span>
             <div class="mt-1 flex h-14 w-full items-end justify-center rounded-t-xl bg-amber-50 dark:bg-amber-900/20">
               <span class="pb-2 text-2xl font-bold text-amber-700 dark:text-amber-600">3</span>
             </div>
@@ -336,17 +334,15 @@ onMounted(async () => {
               <button
                 v-if="user.discordUserId !== myUserId"
                 @click.prevent="setAsMe(user.discordUserId)"
-                class="rounded-lg p-2 text-slate-300 transition-colors hover:bg-violet-100 hover:text-violet-500 dark:hover:bg-violet-900/30"
-                title="設為自己"
+                class="shrink-0 rounded-lg border border-slate-200 px-2.5 py-1 text-xs text-slate-500 transition-colors hover:border-violet-400 hover:text-violet-600 dark:border-slate-600 dark:text-slate-400 dark:hover:border-violet-500 dark:hover:text-violet-400"
               >
-                <i class="bi bi-person-plus"></i>
+                這是我
               </button>
               <span
                 v-else
-                class="rounded-lg p-2 text-violet-500"
-                title="這是你"
+                class="shrink-0 rounded-lg border border-violet-200 bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-600 dark:border-violet-700 dark:bg-violet-900/30 dark:text-violet-400"
               >
-                <i class="bi bi-person-check-fill"></i>
+                你本人
               </span>
             </div>
           </div>
