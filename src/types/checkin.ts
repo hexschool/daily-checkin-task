@@ -155,6 +155,7 @@ export interface StreakResult {
 }
 
 export type AchievementTier = 'bronze' | 'silver' | 'gold' | 'diamond'
+export type AchievementCategory = 'streak' | 'completion'
 
 export interface Achievement {
   id: string
@@ -162,6 +163,7 @@ export interface Achievement {
   description: string
   icon: string
   tier: AchievementTier
+  category: AchievementCategory
   unlocked: boolean
   xpReward: number
 }

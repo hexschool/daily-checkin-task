@@ -13,6 +13,7 @@ const ACHIEVEMENT_DEFS: Omit<Achievement, 'unlocked'>[] = [
     description: '完成第一次打卡',
     icon: 'bi-star',
     tier: 'bronze',
+    category: 'streak',
     xpReward: 20,
   },
   {
@@ -21,6 +22,7 @@ const ACHIEVEMENT_DEFS: Omit<Achievement, 'unlocked'>[] = [
     description: '連續打卡 3 天',
     icon: 'bi-fire',
     tier: 'bronze',
+    category: 'streak',
     xpReward: 20,
   },
   {
@@ -29,6 +31,7 @@ const ACHIEVEMENT_DEFS: Omit<Achievement, 'unlocked'>[] = [
     description: '連續打卡 5 天',
     icon: 'bi-fire',
     tier: 'silver',
+    category: 'streak',
     xpReward: 30,
   },
   {
@@ -37,6 +40,7 @@ const ACHIEVEMENT_DEFS: Omit<Achievement, 'unlocked'>[] = [
     description: '連續打卡 10 天',
     icon: 'bi-fire',
     tier: 'gold',
+    category: 'streak',
     xpReward: 50,
   },
   {
@@ -45,6 +49,7 @@ const ACHIEVEMENT_DEFS: Omit<Achievement, 'unlocked'>[] = [
     description: '完成率達到 50%',
     icon: 'bi-flag',
     tier: 'silver',
+    category: 'completion',
     xpReward: 30,
   },
   {
@@ -53,6 +58,7 @@ const ACHIEVEMENT_DEFS: Omit<Achievement, 'unlocked'>[] = [
     description: '完成率達到 80%',
     icon: 'bi-flag-fill',
     tier: 'gold',
+    category: 'completion',
     xpReward: 50,
   },
   {
@@ -61,6 +67,7 @@ const ACHIEVEMENT_DEFS: Omit<Achievement, 'unlocked'>[] = [
     description: '完成率達到 100%',
     icon: 'bi-trophy',
     tier: 'diamond',
+    category: 'completion',
     xpReward: 50,
   },
 ]

@@ -1,10 +1,26 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { Achievement } from '@/types/checkin'
 import AchievementBadge from './AchievementBadge.vue'
 
-defineProps<{
+const props = defineProps<{
   achievements: Achievement[]
 }>()
+
+const categoryGroups = computed(() => [
+  {
+    label: '連續打卡',
+    icon: 'bi-fire',
+    items: props.achievements.filter(a => a.category === 'streak'),
+  },
+  {
+    label: '完成率',
+    icon: 'bi-bullseye',
+    items: props.achievements.filter(a => a.category === 'completion'),
+  },
+])
+
+const unlockedCount = computed(() => props.achievements.filter(a => a.unlocked).length)
 </script>
 
 <template>
@@ -15,16 +31,24 @@ defineProps<{
         成就
       </h3>
       <span class="text-sm text-slate-500 dark:text-slate-400">
-        {{ achievements.filter(a => a.unlocked).length }} / {{ achievements.length }}
+        {{ unlockedCount }} / {{ achievements.length }}
       </span>
     </div>
-    <div class="flex gap-2 overflow-x-auto pb-2">
-      <AchievementBadge
-        v-for="achievement in achievements"
-        :key="achievement.id"
-        :achievement="achievement"
-        class="shrink-0"
-      />
+    <div class="space-y-4">
+      <div v-for="group in categoryGroups" :key="group.label">
+        <p class="mb-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+          <i :class="['bi', group.icon, 'mr-1']"></i>
+          {{ group.label }}
+        </p>
+        <div class="flex gap-2 overflow-x-auto pb-1">
+          <AchievementBadge
+            v-for="achievement in group.items"
+            :key="achievement.id"
+            :achievement="achievement"
+            class="shrink-0"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>

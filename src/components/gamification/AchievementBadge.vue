@@ -7,25 +7,32 @@ defineProps<{
 
 const tierColors = {
   bronze: {
-    bg: 'bg-amber-100 dark:bg-amber-900/40',
-    text: 'text-amber-700 dark:text-amber-300',
-    ring: 'ring-amber-300 dark:ring-amber-700',
+    gradient: 'from-amber-200 to-orange-300 dark:from-amber-700 dark:to-orange-600',
+    text: 'text-amber-800 dark:text-amber-200',
+    ring: 'ring-amber-400 dark:ring-amber-600',
   },
   silver: {
-    bg: 'bg-slate-100 dark:bg-slate-700/60',
-    text: 'text-slate-600 dark:text-slate-300',
-    ring: 'ring-slate-300 dark:ring-slate-600',
+    gradient: 'from-slate-200 to-blue-200 dark:from-slate-600 dark:to-blue-700',
+    text: 'text-blue-700 dark:text-blue-200',
+    ring: 'ring-blue-300 dark:ring-blue-600',
   },
   gold: {
-    bg: 'bg-yellow-100 dark:bg-yellow-900/40',
-    text: 'text-yellow-700 dark:text-yellow-300',
-    ring: 'ring-yellow-400 dark:ring-yellow-700',
+    gradient: 'from-yellow-200 to-amber-300 dark:from-yellow-700 dark:to-amber-600',
+    text: 'text-yellow-800 dark:text-yellow-200',
+    ring: 'ring-yellow-400 dark:ring-yellow-600',
   },
   diamond: {
-    bg: 'bg-violet-100 dark:bg-violet-900/40',
-    text: 'text-violet-600 dark:text-violet-300',
-    ring: 'ring-violet-400 dark:ring-violet-700',
+    gradient: 'from-violet-300 to-indigo-400 dark:from-violet-700 dark:to-indigo-600',
+    text: 'text-violet-800 dark:text-violet-200',
+    ring: 'ring-violet-400 dark:ring-violet-500',
   },
+}
+
+const tierRingWidth = {
+  bronze: 'ring-2',
+  silver: 'ring-2',
+  gold: 'ring-3',
+  diamond: 'ring-3',
 }
 </script>
 
@@ -35,10 +42,11 @@ const tierColors = {
     :class="achievement.unlocked ? 'opacity-100' : 'opacity-40 grayscale'"
   >
     <div
-      class="flex h-12 w-12 items-center justify-center rounded-full ring-2"
+      class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br"
       :class="[
-        tierColors[achievement.tier].bg,
+        tierColors[achievement.tier].gradient,
         tierColors[achievement.tier].ring,
+        tierRingWidth[achievement.tier],
       ]"
     >
       <i
