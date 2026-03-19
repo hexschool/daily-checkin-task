@@ -32,7 +32,8 @@ async function doSearch() {
   isSearching.value = true
   try {
     const response = await checkinStore.searchUsers(scheduleId.value, searchQuery.value, 10)
-    searchResults.value = response.results
+    // API 實際回傳陣列，非 SearchResponse 物件
+    searchResults.value = (Array.isArray(response) ? response : response.results) as SearchResult[]
   } catch {
     searchResults.value = []
   } finally {
