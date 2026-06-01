@@ -11,28 +11,28 @@ const scheduleId = computed(() => route.params.scheduleId as string)
 
 const navItems = computed(() => [
   {
+    name: '打卡日曆',
+    icon: 'bi-calendar3',
+    to: { name: 'calendar', params: { scheduleId: scheduleId.value } },
+    routeNames: ['calendar', 'day-detail'],
+  },
+  {
     name: '我的旅程',
     icon: 'bi-rocket-takeoff-fill',
     to: { name: 'my-journey', params: { scheduleId: scheduleId.value } },
     routeNames: ['my-journey'],
   },
   {
-    name: '日曆',
-    icon: 'bi-calendar3',
-    to: { name: 'calendar', params: { scheduleId: scheduleId.value } },
-    routeNames: ['calendar', 'day-detail'],
+    name: '我的追蹤',
+    icon: 'bi-people-fill',
+    to: { name: 'friends', params: { scheduleId: scheduleId.value } },
+    routeNames: ['friends', 'user-detail'],
   },
   {
     name: '排行榜',
     icon: 'bi-trophy-fill',
     to: { name: 'leaderboard', params: { scheduleId: scheduleId.value } },
     routeNames: ['leaderboard'],
-  },
-  {
-    name: '好友',
-    icon: 'bi-people-fill',
-    to: { name: 'friends', params: { scheduleId: scheduleId.value } },
-    routeNames: ['friends', 'user-detail'],
   },
 ])
 

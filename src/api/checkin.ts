@@ -16,7 +16,7 @@ async function fetchApi<T>(url: string): Promise<T> {
   let response: Response
   try {
     response = await fetch(fullUrl)
-  } catch (e) {
+  } catch {
     throw new Error(`無法連接到 API 伺服器 (${API_BASE_URL})`)
   }
 

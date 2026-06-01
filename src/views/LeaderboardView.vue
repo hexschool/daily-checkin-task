@@ -85,11 +85,6 @@ function toggleTrack(discordUserId: string) {
   pinnedStore.togglePin(scheduleId.value, discordUserId)
 }
 
-async function setAsMe(discordUserId: string) {
-  identityStore.setMyIdentity(scheduleId.value, discordUserId)
-  await checkinStore.fetchMyUserDetail(scheduleId.value, discordUserId)
-}
-
 async function fetchAllUsers() {
   await checkinStore.fetchUsers(scheduleId.value, { limit: 100 })
   while (checkinStore.hasMorePages) {
@@ -178,27 +173,13 @@ onMounted(async () => {
               </div>
               <button
                 @click.prevent="toggleTrack(user.discordUserId)"
-                class="rounded-lg p-2 transition-colors"
+                class="shrink-0 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors"
                 :class="pinnedStore.isPinned(scheduleId, user.discordUserId)
-                  ? 'text-violet-500 hover:bg-violet-100 dark:hover:bg-violet-900/30'
-                  : 'text-slate-300 hover:bg-slate-100 hover:text-violet-500 dark:hover:bg-slate-700'"
-                :title="pinnedStore.isPinned(scheduleId, user.discordUserId) ? '取消追蹤' : '追蹤'"
+                  ? 'bg-violet-100 text-violet-600 hover:bg-violet-200 dark:bg-violet-900/40 dark:text-violet-400 dark:hover:bg-violet-900/60'
+                  : 'border border-slate-200 text-slate-500 hover:border-violet-400 hover:text-violet-600 dark:border-slate-600 dark:text-slate-400 dark:hover:border-violet-500 dark:hover:text-violet-400'"
               >
-                <i :class="pinnedStore.isPinned(scheduleId, user.discordUserId) ? 'bi bi-bookmark-fill' : 'bi bi-bookmark'"></i>
+                {{ pinnedStore.isPinned(scheduleId, user.discordUserId) ? '追蹤中' : '追蹤' }}
               </button>
-              <button
-                v-if="user.discordUserId !== myUserId"
-                @click.prevent="setAsMe(user.discordUserId)"
-                class="shrink-0 rounded-lg border border-slate-200 px-2.5 py-1 text-xs text-slate-500 transition-colors hover:border-violet-400 hover:text-violet-600 dark:border-slate-600 dark:text-slate-400 dark:hover:border-violet-500 dark:hover:text-violet-400"
-              >
-                這是我
-              </button>
-              <span
-                v-else
-                class="shrink-0 rounded-lg border border-violet-200 bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-600 dark:border-violet-700 dark:bg-violet-900/30 dark:text-violet-400"
-              >
-                你本人
-              </span>
             </div>
           </div>
         </div>
@@ -244,27 +225,13 @@ onMounted(async () => {
               </div>
               <button
                 @click.prevent="toggleTrack(user.discordUserId)"
-                class="rounded-lg p-2 transition-colors"
+                class="shrink-0 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors"
                 :class="pinnedStore.isPinned(scheduleId, user.discordUserId)
-                  ? 'text-violet-500 hover:bg-violet-100 dark:hover:bg-violet-900/30'
-                  : 'text-slate-300 hover:bg-slate-100 hover:text-violet-500 dark:hover:bg-slate-700'"
-                :title="pinnedStore.isPinned(scheduleId, user.discordUserId) ? '取消追蹤' : '追蹤'"
+                  ? 'bg-violet-100 text-violet-600 hover:bg-violet-200 dark:bg-violet-900/40 dark:text-violet-400 dark:hover:bg-violet-900/60'
+                  : 'border border-slate-200 text-slate-500 hover:border-violet-400 hover:text-violet-600 dark:border-slate-600 dark:text-slate-400 dark:hover:border-violet-500 dark:hover:text-violet-400'"
               >
-                <i :class="pinnedStore.isPinned(scheduleId, user.discordUserId) ? 'bi bi-bookmark-fill' : 'bi bi-bookmark'"></i>
+                {{ pinnedStore.isPinned(scheduleId, user.discordUserId) ? '追蹤中' : '追蹤' }}
               </button>
-              <button
-                v-if="user.discordUserId !== myUserId"
-                @click.prevent="setAsMe(user.discordUserId)"
-                class="shrink-0 rounded-lg border border-slate-200 px-2.5 py-1 text-xs text-slate-500 transition-colors hover:border-violet-400 hover:text-violet-600 dark:border-slate-600 dark:text-slate-400 dark:hover:border-violet-500 dark:hover:text-violet-400"
-              >
-                這是我
-              </button>
-              <span
-                v-else
-                class="shrink-0 rounded-lg border border-violet-200 bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-600 dark:border-violet-700 dark:bg-violet-900/30 dark:text-violet-400"
-              >
-                你本人
-              </span>
             </div>
           </div>
         </div>

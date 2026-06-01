@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, computed, ref, watch } from 'vue'
+import { onMounted, computed, ref, watch, nextTick } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import AppShell from '@/components/layout/AppShell.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
@@ -7,7 +7,6 @@ import ErrorMessage from '@/components/common/ErrorMessage.vue'
 import StreakBadge from '@/components/gamification/StreakBadge.vue'
 import AchievementList from '@/components/gamification/AchievementList.vue'
 import LevelProgress from '@/components/gamification/LevelProgress.vue'
-import ContributionHeatmap from '@/components/gamification/ContributionHeatmap.vue'
 import { useCheckinStore } from '@/stores/checkin'
 import { checkinApi } from '@/api/checkin'
 import { useIdentityStore } from '@/stores/identity'
@@ -32,6 +31,26 @@ const allUsers = ref<UserCheckinItem[]>([])
 const isLoadingUsers = ref(false)
 const isSearching = ref(false)
 const searchResults = ref<UserCheckinItem[]>([])
+
+// 身份選擇彈窗
+const isIdentityModalOpen = ref(false)
+const identityInputRef = ref<HTMLInputElement | null>(null)
+
+async function openIdentityModal() {
+  isIdentityModalOpen.value = true
+  await nextTick()
+  identityInputRef.value?.focus()
+  // 首次開啟時才載入名單
+  if (allUsers.value.length === 0) {
+    await loadAllUsers()
+  }
+}
+
+function closeIdentityModal() {
+  isIdentityModalOpen.value = false
+  identitySearch.value = ''
+  searchResults.value = []
+}
 
 const displayUsers = computed(() => {
   if (identitySearch.value.trim() && searchResults.value.length > 0) {
@@ -74,8 +93,7 @@ watch(identitySearch, () => {
 
 async function selectIdentity(user: UserCheckinItem) {
   identityStore.setMyIdentity(scheduleId.value, user.discordUserId)
-  identitySearch.value = ''
-  searchResults.value = []
+  closeIdentityModal()
   await checkinStore.fetchMyUserDetail(scheduleId.value, user.discordUserId)
 }
 
@@ -121,15 +139,6 @@ const levelInfo = computed(() => {
   })
 })
 
-// 最近打卡活動
-const recentActivity = computed(() => {
-  if (!myUser.value) return []
-  return myUser.value.checkinDetails
-    .filter(d => d.checkedIn)
-    .slice(-5)
-    .reverse()
-})
-
 // 追蹤好友預覽
 const friendList = computed(() => {
   return pinnedStore.getPinnedUserList(scheduleId.value).slice(0, 3)
@@ -151,9 +160,8 @@ onMounted(async () => {
   if (myUserId.value) {
     await checkinStore.fetchMyUserDetail(scheduleId.value, myUserId.value)
     await pinnedStore.fetchPinnedUsers(scheduleId.value)
-  } else {
-    await loadAllUsers()
   }
+  // 未設定身份時，名單改為開啟彈窗時才載入
 })
 </script>
 
@@ -205,88 +213,20 @@ onMounted(async () => {
       </div>
 
       <!-- 身份搜尋引導（未設定時） -->
-      <div v-else class="rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
-        <!-- Header -->
-        <div class="border-b border-slate-100 p-6 text-center dark:border-slate-700">
-          <i class="bi bi-person-badge text-4xl text-violet-400"></i>
-          <h2 class="mt-3 text-lg font-bold text-slate-800 dark:text-white">找到你自己</h2>
-          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">從列表中找到自己，點擊「這是我」開啟個人化旅程</p>
+      <div v-else class="rounded-2xl border border-slate-200 bg-white p-6 text-center dark:border-slate-700 dark:bg-slate-800">
+        <i class="bi bi-person-badge text-4xl text-violet-400"></i>
+        <h2 class="mt-3 text-lg font-bold text-slate-800 dark:text-white">找到你自己</h2>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">從列表中找到自己，點擊「這是我」開啟個人化旅程</p>
 
-          <!-- 搜尋框 -->
-          <div class="relative mx-auto mt-4 max-w-sm">
-            <input
-              v-model="identitySearch"
-              type="text"
-              placeholder="搜尋暱稱或 Discord ID..."
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-10 text-sm text-slate-800 placeholder-slate-400 transition-colors focus:border-violet-500 focus:bg-white focus:ring-1 focus:ring-violet-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:focus:bg-slate-800"
-            />
-            <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <button
-              v-if="identitySearch"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white"
-              @click="identitySearch = ''; searchResults = []"
-            >
-              <i class="bi bi-x-lg text-sm"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- 用戶名單（可捲動） -->
-        <div class="max-h-80 overflow-y-auto">
-          <div v-if="isSearching || isLoadingUsers" class="flex justify-center py-8">
-            <LoadingSpinner size="sm" />
-          </div>
-
-          <div v-else-if="displayUsers.length === 0 && identitySearch.trim()" class="p-8 text-center">
-            <i class="bi bi-search text-2xl text-slate-300 dark:text-slate-600"></i>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">找不到「{{ identitySearch }}」</p>
-          </div>
-
-          <div
-            v-for="user in displayUsers"
-            :key="user.discordUserId"
-            class="flex items-center gap-3 border-b border-slate-50 px-5 py-3 last:border-0 dark:border-slate-700/30"
-          >
-            <img
-              :src="avatarUrl(user.avatarUrl)"
-              :alt="user.displayName"
-              class="h-10 w-10 shrink-0 rounded-full ring-1 ring-slate-100 dark:ring-slate-700"
-            />
-            <div class="min-w-0 flex-1">
-              <p class="truncate text-sm font-medium text-slate-800 dark:text-white">{{ user.displayName }}</p>
-              <p class="truncate text-xs text-slate-500 dark:text-slate-400">@{{ user.username }}</p>
-            </div>
-            <span class="shrink-0 text-xs text-slate-400">{{ user.totalCheckinDays }} 天</span>
-            <button
-              @click="selectIdentity(user)"
-              class="shrink-0 rounded-lg bg-violet-100 px-3 py-1.5 text-xs font-medium text-violet-600 transition-colors hover:bg-violet-200 dark:bg-violet-900/40 dark:text-violet-400 dark:hover:bg-violet-900/60"
-            >
-              這是我
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- 統計卡片列 -->
-      <div v-if="myUser" class="grid grid-cols-3 gap-3">
-        <div class="rounded-xl border border-slate-200 bg-white p-4 text-center dark:border-slate-700 dark:bg-slate-800">
-          <p class="text-2xl font-bold text-violet-600 dark:text-violet-400">
-            {{ myUser.totalCheckinDays }}/{{ checkinStore.scheduleStats.expectedTasks }}
-          </p>
-          <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">完成天數</p>
-        </div>
-        <div class="rounded-xl border border-slate-200 bg-white p-4 text-center dark:border-slate-700 dark:bg-slate-800">
-          <div class="flex items-center justify-center">
-            <StreakBadge :streak="streakResult.currentStreak" size="md" />
-          </div>
-          <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">連續打卡</p>
-        </div>
-        <div class="rounded-xl border border-slate-200 bg-white p-4 text-center dark:border-slate-700 dark:bg-slate-800">
-          <p class="text-2xl font-bold text-amber-600 dark:text-amber-400">
-            {{ streakResult.longestStreak }}
-          </p>
-          <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">最長連續</p>
-        </div>
+        <!-- 點擊開啟身份選擇彈窗 -->
+        <button
+          type="button"
+          @click="openIdentityModal"
+          class="relative mx-auto mt-4 flex w-full max-w-sm items-center rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-left text-sm text-slate-400 transition-colors hover:border-violet-400 hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:hover:bg-slate-800"
+        >
+          <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          搜尋暱稱或 Discord ID...
+        </button>
       </div>
 
       <!-- 全局統計（未設定身份時） -->
@@ -311,54 +251,8 @@ onMounted(async () => {
         </div>
       </div>
 
-      <!-- 熱力圖 -->
-      <div>
-        <h3 class="mb-3 font-semibold text-slate-800 dark:text-white">
-          <i class="bi bi-calendar3 mr-2 text-violet-500"></i>
-          打卡日曆
-        </h3>
-        <ContributionHeatmap
-          variant="strip"
-          :daily-stats="checkinStore.scheduleStats.dailyStats"
-          :checkin-status="myUser ? myCheckinStatus : undefined"
-          :expected-tasks="checkinStore.scheduleStats.expectedTasks"
-          :clickable="true"
-          @day-click="$router.push({ name: 'day-detail', params: { scheduleId, dayLabel: $event } })"
-        />
-        <p class="mt-2 text-right text-xs text-slate-400 dark:text-slate-500">資料每小時更新一次</p>
-      </div>
-
       <!-- 成就徽章 -->
       <AchievementList v-if="myUser && achievements.length" :achievements="achievements" />
-
-      <!-- 最近活動 -->
-      <div v-if="myUser && recentActivity.length" class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
-        <h3 class="mb-3 font-semibold text-slate-800 dark:text-white">
-          <i class="bi bi-clock-history mr-2 text-violet-500"></i>
-          最近打卡
-        </h3>
-        <div class="space-y-2">
-          <RouterLink
-            v-for="activity in recentActivity"
-            :key="activity.dayLabel"
-            :to="{ name: 'day-detail', params: { scheduleId, dayLabel: activity.dayLabel } }"
-            class="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 transition-colors hover:bg-slate-100 dark:bg-slate-700/50 dark:hover:bg-slate-700"
-          >
-            <div class="flex items-center gap-3">
-              <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/50">
-                <i class="bi bi-check2 text-emerald-600 dark:text-emerald-400"></i>
-              </div>
-              <div>
-                <p class="text-sm font-medium text-slate-700 dark:text-slate-200">{{ activity.dayLabel }}</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400">{{ activity.threadTitle }}</p>
-              </div>
-            </div>
-            <span v-if="activity.checkinTime" class="text-xs text-slate-400">
-              {{ new Date(activity.checkinTime).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }) }}
-            </span>
-          </RouterLink>
-        </div>
-      </div>
 
       <!-- 追蹤好友預覽 -->
       <div v-if="friendList.length" class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
@@ -395,5 +289,111 @@ onMounted(async () => {
         </div>
       </div>
     </div>
+
+    <!-- 身份選擇彈窗 -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="isIdentityModalOpen"
+          class="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4"
+        >
+          <!-- 背景遮罩 -->
+          <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="closeIdentityModal"></div>
+
+          <!-- 彈窗主體 -->
+          <div
+            class="relative flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-t-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-800 sm:rounded-2xl"
+          >
+            <!-- 標題列 -->
+            <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-700">
+              <div class="flex items-center gap-2">
+                <i class="bi bi-person-badge text-violet-500"></i>
+                <h2 class="text-base font-bold text-slate-800 dark:text-white">找到你自己</h2>
+              </div>
+              <button
+                @click="closeIdentityModal"
+                class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700"
+                aria-label="關閉"
+              >
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+
+            <!-- 搜尋框 -->
+            <div class="border-b border-slate-100 p-4 dark:border-slate-700">
+              <div class="relative">
+                <input
+                  ref="identityInputRef"
+                  v-model="identitySearch"
+                  type="text"
+                  placeholder="搜尋暱稱或 Discord ID..."
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-10 text-sm text-slate-800 placeholder-slate-400 transition-colors focus:border-violet-500 focus:bg-white focus:ring-1 focus:ring-violet-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:focus:bg-slate-800"
+                />
+                <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <button
+                  v-if="identitySearch"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white"
+                  @click="identitySearch = ''; searchResults = []"
+                >
+                  <i class="bi bi-x-lg text-sm"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- 用戶名單（可捲動） -->
+            <div class="flex-1 overflow-y-auto">
+              <div v-if="isSearching || isLoadingUsers" class="flex justify-center py-8">
+                <LoadingSpinner size="sm" />
+              </div>
+
+              <div v-else-if="displayUsers.length === 0 && identitySearch.trim()" class="p-8 text-center">
+                <i class="bi bi-search text-2xl text-slate-300 dark:text-slate-600"></i>
+                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">找不到「{{ identitySearch }}」</p>
+              </div>
+
+              <div v-else-if="displayUsers.length === 0" class="p-8 text-center">
+                <i class="bi bi-people text-2xl text-slate-300 dark:text-slate-600"></i>
+                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">目前沒有可選的使用者</p>
+              </div>
+
+              <div
+                v-for="user in displayUsers"
+                :key="user.discordUserId"
+                class="flex items-center gap-3 border-b border-slate-50 px-5 py-3 last:border-0 dark:border-slate-700/30"
+              >
+                <img
+                  :src="avatarUrl(user.avatarUrl)"
+                  :alt="user.displayName"
+                  class="h-10 w-10 shrink-0 rounded-full ring-1 ring-slate-100 dark:ring-slate-700"
+                />
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-sm font-medium text-slate-800 dark:text-white">{{ user.displayName }}</p>
+                  <p class="truncate text-xs text-slate-500 dark:text-slate-400">@{{ user.username }}</p>
+                </div>
+                <span class="shrink-0 text-xs text-slate-400">{{ user.totalCheckinDays }} 天</span>
+                <button
+                  @click="selectIdentity(user)"
+                  class="shrink-0 rounded-lg bg-violet-100 px-3 py-1.5 text-xs font-medium text-violet-600 transition-colors hover:bg-violet-200 dark:bg-violet-900/40 dark:text-violet-400 dark:hover:bg-violet-900/60"
+                >
+                  這是我
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </AppShell>
 </template>
+
+<style scoped>
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+</style>

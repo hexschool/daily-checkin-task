@@ -4,16 +4,24 @@ const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
     {
+      // 根路由導向打卡日曆（打卡日曆為主要首頁）
       path: '/:scheduleId',
-      name: 'my-journey',
-      component: () => import('@/views/MyJourney.vue'),
-      meta: { title: '我的旅程' },
+      redirect: (to) => ({
+        name: 'calendar',
+        params: { scheduleId: to.params.scheduleId },
+      }),
     },
     {
       path: '/:scheduleId/calendar',
       name: 'calendar',
       component: () => import('@/views/CalendarView.vue'),
       meta: { title: '打卡日曆' },
+    },
+    {
+      path: '/:scheduleId/journey',
+      name: 'my-journey',
+      component: () => import('@/views/MyJourney.vue'),
+      meta: { title: '我的旅程' },
     },
     {
       path: '/:scheduleId/leaderboard',

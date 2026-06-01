@@ -35,6 +35,16 @@ const checkinModeDescription = computed(() => {
   }
 })
 
+// 活動起訖日期區間（由 dailyStats 的最早～最晚日期推導）
+const activityPeriod = computed(() => {
+  const stats = checkinStore.scheduleStats?.dailyStats
+  if (!stats || stats.length === 0) return null
+  const times = stats.map(s => new Date(s.date).getTime())
+  const fmt = (t: number) =>
+    new Date(t).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' })
+  return `${fmt(Math.min(...times))} – ${fmt(Math.max(...times))}`
+})
+
 // 選中的日期
 const selectedDay = ref<DailyStat | null>(null)
 
@@ -45,6 +55,15 @@ const myCheckinStatus = computed(() => {
     status[d.dayLabel] = d.checkedIn
   })
   return status
+})
+
+// 每日任務：取最近 5 天（新到舊），數量可視需求調整
+const dailyTasks = computed(() => {
+  const stats = checkinStore.scheduleStats?.dailyStats
+  if (!stats) return []
+  return [...stats]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5)
 })
 
 function handleDayClick(dayLabel: string) {
@@ -61,6 +80,25 @@ function formatDate(dateStr: string): string {
     day: 'numeric',
     weekday: 'short',
   })
+}
+
+// 以本地年/月/日判斷某日期是否為今天 / 昨天
+function isSameLocalDate(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  )
+}
+
+function isToday(dateStr: string): boolean {
+  return isSameLocalDate(new Date(dateStr), new Date())
+}
+
+function isYesterday(dateStr: string): boolean {
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  return isSameLocalDate(new Date(dateStr), yesterday)
 }
 
 onMounted(async () => {
@@ -94,6 +132,7 @@ onMounted(async () => {
         </h1>
         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
           {{ checkinStore.scheduleStats.scheduleName }}
+          <span v-if="activityPeriod"> · {{ activityPeriod }}</span>
         </p>
       </div>
 
@@ -159,6 +198,77 @@ onMounted(async () => {
           </div>
         </div>
       </Transition>
+
+      <!-- 每日任務 -->
+      <div v-if="dailyTasks.length" class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
+        <h3 class="mb-3 font-semibold text-slate-800 dark:text-white">
+          <i class="bi bi-list-check mr-2 text-violet-500"></i>
+          每日任務
+        </h3>
+
+        <!-- 如何參與說明 -->
+        <div class="mb-3 flex items-start gap-3 rounded-xl border border-amber-100 bg-amber-50/60 px-4 py-3 dark:border-amber-900/40 dark:bg-amber-900/10">
+          <i class="bi bi-lightbulb-fill mt-0.5 text-amber-500"></i>
+          <div>
+            <p class="text-sm font-medium text-slate-700 dark:text-slate-200">如何參與</p>
+            <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+              點任務 → 進入 Discord 頻道 → 留言即自動打卡
+              <span class="font-medium text-slate-600 dark:text-slate-300">（資料每小時更新一次）</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <div
+            v-for="task in dailyTasks"
+            :key="task.dayLabel"
+            class="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3 dark:bg-slate-700/50"
+          >
+            <!-- 左側：任務標題 + 狀態徽章 -->
+            <div class="flex min-w-0 items-center gap-3">
+              <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900/40">
+                <i class="bi bi-calendar-check text-violet-600 dark:text-violet-400"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <p class="text-sm font-medium text-slate-700 dark:text-slate-200">{{ task.dayLabel }}</p>
+                  <span
+                    v-if="isToday(task.date)"
+                    class="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-600 dark:bg-amber-900/40 dark:text-amber-400"
+                  >今日</span>
+                  <span
+                    v-if="myCheckinStatus?.[task.dayLabel]"
+                    class="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400"
+                  >已完成</span>
+                </div>
+                <p class="truncate text-xs text-slate-500 dark:text-slate-400">{{ task.threadTitle }}</p>
+              </div>
+            </div>
+
+            <!-- 右側：前往打卡（今日）/ 前往（昨日）— 連 Discord 討論串 -->
+            <a
+              v-if="isToday(task.date)"
+              :href="task.threadUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex shrink-0 items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-violet-700"
+            >
+              <i class="bi bi-discord"></i>
+              前往打卡
+            </a>
+            <a
+              v-else-if="isYesterday(task.date)"
+              :href="task.threadUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex shrink-0 items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
+            >
+              前往
+              <i class="bi bi-box-arrow-up-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
 
       <!-- 統計資訊 -->
       <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
