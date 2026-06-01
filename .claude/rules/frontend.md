@@ -29,10 +29,19 @@ paths: ["src/**/*.ts", "src/**/*.vue"]
 
 ## API Service
 
-- API 透過 `apiClient`（Axios 實例）發送請求
-- 一個 domain 一個檔案，置於 `src/services/api/`
-- 回應使用 `ApiResponse<T>` 型別包裝
-- 新增服務後在 `index.ts` 加入 barrel export：`export * as xxxApi from './xxx'`
+- 使用**原生 `fetch`**（非 Axios），不額外引入 HTTP client 套件
+- API 集中在 `src/api/checkin.ts`，以 `checkinApi` 物件聚合所有端點（每個 method 對應一個端點）
+- 內部 `fetchApi<T>()` helper 負責組 URL、檢查回應、並**自動拆出後端 `{ success, data, error }` 信封的 `.data`**——所以 method 回傳的是已解開的資料，不是整個信封
+- 錯誤一律 `throw new Error(...)`，訊息取自 `data.error.message`；由呼叫端（store action）以 try/catch 收斂到 `error` 狀態
+- Base URL 來自 `import.meta.env.VITE_API_BASE_URL`（預設 `http://localhost:3000`）
+- 型別集中於 `src/types/checkin.ts`，與後端回傳結構對應
+
+## Composables（遊戲化）
+
+- 連續天數／等級／XP／成就為**前端純函式計算**，後端不提供
+- 置於 `src/composables/`，命名 `useXxx`，**無狀態純函式**（輸入打卡資料、回傳結果）
+- 於 view 內以 `computed` 呼叫，**不存進 store**
+- 調整規則改對應常數表（如 `LEVEL_THRESHOLDS`、`ACHIEVEMENT_DEFS`）
 
 ## Pinia Store
 
