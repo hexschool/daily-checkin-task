@@ -15,9 +15,9 @@ watch(
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 dark:bg-slate-950">
+  <div class="min-h-screen">
     <TopNavBar />
-    <main class="mx-auto max-w-6xl px-4 pt-20 pb-8 sm:px-6 lg:px-8">
+    <main class="mx-auto max-w-5xl px-5 pb-24 pt-24 sm:px-6">
       <slot />
     </main>
   </div>

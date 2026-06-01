@@ -49,13 +49,14 @@ function handleClear() {
       type="text"
       :value="inputValue"
       :placeholder="placeholder || '搜尋...'"
-      class="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-11 text-slate-800 placeholder-slate-400 shadow-sm transition-colors focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500"
+      class="w-full border border-edge bg-surface py-3 pl-11 pr-11 text-[15px] text-ink placeholder-muted transition-colors focus:border-acc focus:outline-none"
       @input="handleInput"
     />
-    <i class="bi bi-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+    <i class="bi bi-search absolute left-4 top-1/2 -translate-y-1/2 text-muted"></i>
     <button
       v-if="inputValue"
-      class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-700 dark:hover:text-white"
+      class="absolute right-4 top-1/2 -translate-y-1/2 text-muted transition-colors hover:text-acc"
+      aria-label="清除搜尋"
       @click="handleClear"
     >
       <i class="bi bi-x-lg"></i>

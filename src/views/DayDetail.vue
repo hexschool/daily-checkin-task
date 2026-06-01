@@ -28,7 +28,7 @@ onMounted(() => {
     <!-- Back Link -->
     <RouterLink
       :to="{ name: 'calendar', params: { scheduleId } }"
-      class="mb-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-violet-600"
+      class="mb-6 inline-flex items-center gap-2 text-[15px] font-bold text-muted transition-colors hover:text-acc"
     >
       <i class="bi bi-arrow-left"></i>
       返回日曆

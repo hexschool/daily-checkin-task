@@ -110,17 +110,18 @@ onMounted(async () => {
       @retry="checkinStore.fetchUsers(scheduleId, { limit: 100 })"
     />
 
-    <div v-else class="space-y-6">
+    <div v-else class="space-y-6 pb-20">
       <!-- Header -->
-      <div>
-        <h1 class="text-2xl font-bold text-slate-800 dark:text-white">
-          <i class="bi bi-trophy-fill mr-2 text-amber-500"></i>
+      <header class="arcade-panel p-5">
+        <div class="arcade-eyebrow mb-3">排行榜 · LEADERBOARD</div>
+        <h1 class="flex items-center gap-2 text-2xl font-bold text-ink">
+          <i class="bi bi-trophy-fill text-acc"></i>
           排行榜
         </h1>
-        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          共 {{ sortedUsers.length }} 位參與者
+        <p class="mt-1 text-[15px] text-muted">
+          共 <span class="font-pixel text-acc">{{ sortedUsers.length }}</span> 位參與者
         </p>
-      </div>
+      </header>
 
       <!-- Search Bar -->
       <SearchBar
@@ -135,17 +136,17 @@ onMounted(async () => {
           <LoadingSpinner size="md" />
         </div>
 
-        <div v-else class="rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
-          <div v-if="searchResults.length === 0" class="p-8 text-center">
-            <i class="bi bi-search text-3xl text-slate-300 dark:text-slate-600"></i>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">找不到符合的學員</p>
+        <div v-else class="arcade-panel">
+          <div v-if="searchResults.length === 0" class="p-10 text-center">
+            <i class="bi bi-search text-3xl text-muted"></i>
+            <p class="mt-3 text-[15px] text-muted">找不到符合的學員</p>
           </div>
 
           <div
             v-for="user in searchResults"
             :key="user.discordUserId"
-            class="flex items-center gap-4 border-b border-slate-100 px-5 py-3 last:border-0 dark:border-slate-700/50"
-            :class="user.discordUserId === myUserId ? 'bg-violet-50/50 dark:bg-violet-900/20' : ''"
+            class="flex items-center gap-4 border-b border-edge px-5 py-3 last:border-0"
+            :class="user.discordUserId === myUserId ? 'border-l-2 border-l-acc2 bg-[color-mix(in_srgb,var(--color-acc2)_10%,transparent)]' : ''"
           >
             <RouterLink
               :to="{ name: 'user-detail', params: { scheduleId, discordUserId: user.discordUserId } }"
@@ -154,29 +155,30 @@ onMounted(async () => {
               <img
                 :src="avatarUrl(user.avatarUrl)"
                 :alt="user.displayName"
-                class="h-10 w-10 shrink-0 rounded-full ring-1 ring-slate-100 dark:ring-slate-700"
+                class="h-10 w-10 shrink-0 rounded-full ring-1 ring-edge"
               />
               <div class="min-w-0">
-                <p class="truncate text-sm font-medium text-slate-700 dark:text-slate-200">
+                <p class="truncate text-[15px] font-bold text-ink">
                   {{ user.displayName }}
-                  <span v-if="user.discordUserId === myUserId" class="ml-1 text-xs text-violet-500">(你)</span>
+                  <span v-if="user.discordUserId === myUserId" class="ml-1 text-[15px] font-bold text-acc2">(你)</span>
                 </p>
-                <p class="text-xs text-slate-400">@{{ user.username }}</p>
+                <p class="text-[15px] text-muted">@{{ user.username }}</p>
               </div>
             </RouterLink>
 
             <div class="flex items-center gap-3">
               <StreakBadge :streak="getUserStreak(user)" size="sm" />
               <div class="text-right">
-                <p class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ user.totalCheckinDays }} 天</p>
-                <p class="text-xs text-slate-400">{{ getCompletionRate(user) }}%</p>
+                <p class="text-[15px] font-bold text-ink"><span class="font-pixel text-acc">{{ user.totalCheckinDays }}</span> 天</p>
+                <p class="text-[15px] text-muted">{{ getCompletionRate(user) }}%</p>
               </div>
               <button
                 @click.prevent="toggleTrack(user.discordUserId)"
-                class="shrink-0 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors"
+                :aria-label="pinnedStore.isPinned(scheduleId, user.discordUserId) ? '取消追蹤' : '追蹤'"
+                class="shrink-0 cursor-pointer px-2.5 py-1 text-[15px] font-bold transition-colors"
                 :class="pinnedStore.isPinned(scheduleId, user.discordUserId)
-                  ? 'bg-violet-100 text-violet-600 hover:bg-violet-200 dark:bg-violet-900/40 dark:text-violet-400 dark:hover:bg-violet-900/60'
-                  : 'border border-slate-200 text-slate-500 hover:border-violet-400 hover:text-violet-600 dark:border-slate-600 dark:text-slate-400 dark:hover:border-violet-500 dark:hover:text-violet-400'"
+                  ? 'bg-acc text-acc-ink'
+                  : 'border border-edge text-ink hover:border-acc2 hover:text-acc2'"
               >
                 {{ pinnedStore.isPinned(scheduleId, user.discordUserId) ? '追蹤中' : '追蹤' }}
               </button>
@@ -187,15 +189,18 @@ onMounted(async () => {
 
       <!-- ===== 正常排名模式 ===== -->
       <template v-else>
-        <div class="rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+        <div class="arcade-panel">
           <div
             v-for="(user, index) in sortedUsers"
             :key="user.discordUserId"
-            class="flex items-center gap-4 border-b border-slate-100 px-5 py-3 last:border-0 dark:border-slate-700/50"
-            :class="user.discordUserId === myUserId ? 'bg-violet-50/50 dark:bg-violet-900/20' : ''"
+            class="flex items-center gap-4 border-b border-edge px-5 py-3 last:border-0"
+            :class="user.discordUserId === myUserId ? 'border-l-2 border-l-acc2 bg-[color-mix(in_srgb,var(--color-acc2)_10%,transparent)]' : ''"
           >
             <!-- Rank -->
-            <span class="w-8 text-center text-sm font-bold text-slate-400">{{ index + 1 }}</span>
+            <span
+              class="w-8 shrink-0 text-center font-pixel text-[15px]"
+              :class="index < 3 ? 'text-acc' : 'text-muted'"
+            >{{ index + 1 }}</span>
 
             <!-- Avatar + Info -->
             <RouterLink
@@ -205,14 +210,14 @@ onMounted(async () => {
               <img
                 :src="avatarUrl(user.avatarUrl)"
                 :alt="user.displayName"
-                class="h-10 w-10 shrink-0 rounded-full ring-1 ring-slate-100 dark:ring-slate-700"
+                class="h-10 w-10 shrink-0 rounded-full ring-1 ring-edge"
               />
               <div class="min-w-0">
-                <p class="truncate text-sm font-medium text-slate-700 dark:text-slate-200">
+                <p class="truncate text-[15px] font-bold text-ink">
                   {{ user.displayName }}
-                  <span v-if="user.discordUserId === myUserId" class="ml-1 text-xs text-violet-500">(你)</span>
+                  <span v-if="user.discordUserId === myUserId" class="ml-1 text-[15px] font-bold text-acc2">(你)</span>
                 </p>
-                <p class="text-xs text-slate-400">@{{ user.username }}</p>
+                <p class="text-[15px] text-muted">@{{ user.username }}</p>
               </div>
             </RouterLink>
 
@@ -220,15 +225,16 @@ onMounted(async () => {
             <div class="flex items-center gap-3">
               <StreakBadge :streak="getUserStreak(user)" size="sm" />
               <div class="text-right">
-                <p class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ user.totalCheckinDays }} 天</p>
-                <p class="text-xs text-slate-400">{{ getCompletionRate(user) }}%</p>
+                <p class="text-[15px] font-bold text-ink"><span class="font-pixel text-acc">{{ user.totalCheckinDays }}</span> 天</p>
+                <p class="text-[15px] text-muted">{{ getCompletionRate(user) }}%</p>
               </div>
               <button
                 @click.prevent="toggleTrack(user.discordUserId)"
-                class="shrink-0 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors"
+                :aria-label="pinnedStore.isPinned(scheduleId, user.discordUserId) ? '取消追蹤' : '追蹤'"
+                class="shrink-0 cursor-pointer px-2.5 py-1 text-[15px] font-bold transition-colors"
                 :class="pinnedStore.isPinned(scheduleId, user.discordUserId)
-                  ? 'bg-violet-100 text-violet-600 hover:bg-violet-200 dark:bg-violet-900/40 dark:text-violet-400 dark:hover:bg-violet-900/60'
-                  : 'border border-slate-200 text-slate-500 hover:border-violet-400 hover:text-violet-600 dark:border-slate-600 dark:text-slate-400 dark:hover:border-violet-500 dark:hover:text-violet-400'"
+                  ? 'bg-acc text-acc-ink'
+                  : 'border border-edge text-ink hover:border-acc2 hover:text-acc2'"
               >
                 {{ pinnedStore.isPinned(scheduleId, user.discordUserId) ? '追蹤中' : '追蹤' }}
               </button>
@@ -245,12 +251,13 @@ onMounted(async () => {
       <!-- My Rank Sticky Bar -->
       <div
         v-if="myRank && !isSearchMode"
-        class="fixed bottom-4 left-1/2 z-30 -translate-x-1/2 rounded-full border border-violet-200 bg-white/95 px-6 py-3 shadow-lg backdrop-blur-sm dark:border-violet-700 dark:bg-slate-800/95"
+        class="fixed bottom-4 left-1/2 z-30 -translate-x-1/2 border border-acc bg-base/95 px-6 py-3 shadow-[3px_3px_0_var(--color-acc-strong)] backdrop-blur-sm"
       >
-        <span class="text-sm font-medium text-slate-600 dark:text-slate-300">
+        <span class="flex items-center gap-1.5 text-[15px] font-bold text-muted">
+          <i class="bi bi-person-fill text-acc2"></i>
           你的排名
-          <span class="ml-1 font-bold text-violet-600 dark:text-violet-400">#{{ myRank }}</span>
-          / {{ sortedUsers.length }} 人
+          <span class="font-pixel text-acc2">#{{ myRank }}</span>
+          <span class="text-muted">/ {{ sortedUsers.length }} 人</span>
         </span>
       </div>
     </div>

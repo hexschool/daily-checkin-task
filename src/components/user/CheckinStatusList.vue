@@ -26,71 +26,47 @@ function formatDateTime(dateString: string, timeString: string | null) {
 </script>
 
 <template>
-  <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-    <h3 class="mb-4 text-lg font-semibold text-slate-800 dark:text-white">打卡記錄</h3>
-    <div class="space-y-3">
+  <div class="arcade-panel p-6">
+    <div class="arcade-eyebrow mb-4">打卡記錄 · LOG</div>
+    <div class="space-y-2.5">
       <RouterLink
         v-for="detail in details"
         :key="detail.dayLabel"
         :to="{ name: 'day-detail', params: { scheduleId, dayLabel: detail.dayLabel } }"
-        class="flex items-center justify-between rounded-xl p-3 transition-colors"
-        :class="
-          detail.checkedIn
-            ? 'bg-slate-50 hover:bg-slate-100 dark:bg-slate-700/50 dark:hover:bg-slate-700'
-            : 'bg-slate-50/50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/50'
-        "
+        class="flex items-center justify-between gap-3 border border-edge bg-surface p-3 transition-colors hover:border-acc"
       >
-        <div class="flex items-center gap-3">
+        <div class="flex min-w-0 items-center gap-3">
           <div
-            class="flex h-8 w-8 items-center justify-center rounded-lg"
-            :class="
-              detail.checkedIn
-                ? 'bg-slate-200 dark:bg-slate-600'
-                : 'bg-slate-100 dark:bg-slate-700'
-            "
+            class="flex h-8 w-8 shrink-0 items-center justify-center border"
+            :class="detail.checkedIn ? 'border-acc text-acc' : 'border-edge text-muted'"
           >
             <i
-              class="bi bi-calendar-event text-sm"
-              :class="
-                detail.checkedIn
-                  ? 'text-slate-700 dark:text-slate-300'
-                  : 'text-slate-400 dark:text-slate-500'
-              "
+              class="bi text-base"
+              :class="detail.checkedIn ? 'bi-check-lg' : 'bi-calendar-event'"
             ></i>
           </div>
           <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-1">
+            <div class="flex items-center gap-1.5">
               <span
-                class="text-sm font-medium"
-                :class="
-                  detail.checkedIn
-                    ? 'text-slate-700 dark:text-slate-200'
-                    : 'text-slate-500 dark:text-slate-400'
-                "
+                class="text-[15px] font-bold"
+                :class="detail.checkedIn ? 'text-acc' : 'text-muted'"
               >
                 {{ detail.dayLabel }}：
               </span>
-              <span
-                class="text-sm truncate"
-                :class="
-                  detail.checkedIn
-                    ? 'text-slate-500 dark:text-slate-400'
-                    : 'text-slate-400 dark:text-slate-500'
-                "
-              >
+              <span class="truncate text-[15px] text-ink">
                 {{ detail.threadTitle }}
               </span>
             </div>
           </div>
         </div>
-        <div class="ml-2 flex-shrink-0 text-right">
+        <div class="ml-2 shrink-0 text-right">
           <span
             v-if="detail.checkedIn"
-            class="text-sm text-slate-600 dark:text-slate-300"
+            class="text-[15px] text-muted"
           >
             {{ formatDateTime(detail.date, detail.checkinTime) }}
           </span>
-          <span v-else class="text-sm text-slate-400 dark:text-slate-500">
+          <span v-else class="text-[15px] text-muted">
             {{ formatDateTime(detail.date, null) }}
           </span>
         </div>

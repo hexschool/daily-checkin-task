@@ -110,12 +110,13 @@ onMounted(async () => {
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-slate-800 dark:text-white">
-            <i class="bi bi-people-fill mr-2 text-violet-500"></i>
+          <h1 class="text-2xl font-bold text-ink">
+            <i class="bi bi-people-fill mr-2 text-acc"></i>
             追蹤好友
           </h1>
-          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            {{ friends.length }} / {{ pinnedStore.MAX_PINNED }} 位好友
+          <p class="mt-1 text-[15px] text-muted">
+            <span class="font-pixel text-acc">{{ friends.length }}</span>
+            / {{ pinnedStore.MAX_PINNED }} 位好友
           </p>
         </div>
       </div>
@@ -126,9 +127,9 @@ onMounted(async () => {
           v-model="searchQuery"
           type="text"
           placeholder="搜尋用戶加入追蹤..."
-          class="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm text-slate-800 placeholder-slate-400 transition-colors focus:border-violet-500 focus:ring-1 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+          class="w-full border border-edge bg-surface py-3 pl-10 pr-4 text-[15px] text-ink placeholder-muted transition-colors focus:border-acc focus:outline-none"
         />
-        <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+        <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-muted"></i>
 
         <div v-if="isSearching" class="absolute right-3 top-1/2 -translate-y-1/2">
           <LoadingSpinner size="sm" />
@@ -137,27 +138,27 @@ onMounted(async () => {
         <!-- 搜尋結果 -->
         <div
           v-if="searchResults.length > 0"
-          class="absolute left-0 right-0 top-full z-10 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800"
+          class="absolute left-0 right-0 top-full z-10 mt-2 overflow-hidden border border-edge bg-panel shadow-[6px_6px_0_var(--color-base)]"
         >
           <div
             v-for="result in searchResults"
             :key="result.discordUserId"
-            class="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700"
+            class="flex items-center gap-3 border-b border-edge px-4 py-3 transition-colors last:border-b-0 hover:bg-surface"
           >
-            <img :src="avatarUrl(result.avatarUrl)" :alt="result.displayName" class="h-8 w-8 rounded-full" />
+            <img :src="avatarUrl(result.avatarUrl)" :alt="result.displayName" class="h-8 w-8 rounded-full border border-edge" />
             <div class="min-w-0 flex-1">
-              <p class="truncate text-sm font-medium text-slate-800 dark:text-white">{{ result.displayName }}</p>
-              <p class="truncate text-xs text-slate-500">@{{ result.username }} · {{ result.totalCheckinDays }} 天</p>
+              <p class="truncate text-[15px] font-bold text-ink">{{ result.displayName }}</p>
+              <p class="truncate text-[15px] text-muted">@{{ result.username }} · <span class="font-pixel text-acc">{{ result.totalCheckinDays }}</span> 天</p>
             </div>
             <button
               v-if="!pinnedStore.isPinned(scheduleId, result.discordUserId)"
               @click="trackUser(result)"
               :disabled="!pinnedStore.canPin(scheduleId)"
-              class="rounded-lg bg-violet-100 px-3 py-1.5 text-xs font-medium text-violet-600 transition-colors hover:bg-violet-200 disabled:opacity-50 dark:bg-violet-900/40 dark:text-violet-400"
+              class="arcade-btn cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
             >
               追蹤
             </button>
-            <span v-else class="text-xs text-violet-500">已追蹤</span>
+            <span v-else class="text-[15px] font-bold text-acc">已追蹤</span>
           </div>
         </div>
       </div>
@@ -167,45 +168,46 @@ onMounted(async () => {
         <div
           v-for="friend in friends"
           :key="friend.discordUserId"
-          class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800"
+          class="arcade-panel p-5 transition-colors hover:border-acc"
         >
           <div class="flex items-start justify-between">
             <RouterLink
               :to="{ name: 'user-detail', params: { scheduleId, discordUserId: friend.discordUserId } }"
-              class="flex items-center gap-3"
+              class="flex min-w-0 items-center gap-3"
             >
               <img
                 :src="avatarUrl(friend.avatarUrl)"
                 :alt="friend.displayName"
-                class="h-12 w-12 rounded-full ring-2 ring-slate-100 dark:ring-slate-700"
+                class="h-12 w-12 shrink-0 rounded-full border border-acc"
               />
-              <div>
-                <p class="font-medium text-slate-800 dark:text-white">{{ friend.displayName }}</p>
-                <p class="text-xs text-slate-500">@{{ friend.username }}</p>
+              <div class="min-w-0">
+                <p class="truncate font-bold text-ink">{{ friend.displayName }}</p>
+                <p class="truncate text-[15px] text-muted">@{{ friend.username }}</p>
               </div>
             </RouterLink>
             <button
               @click="untrackUser(friend.discordUserId)"
-              class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/30"
+              class="shrink-0 cursor-pointer border border-transparent p-1.5 text-muted transition-colors hover:border-edge hover:text-ink"
               title="取消追蹤"
+              aria-label="取消追蹤"
             >
-              <i class="bi bi-x-lg text-sm"></i>
+              <i class="bi bi-x-lg text-base"></i>
             </button>
           </div>
 
           <!-- Stats -->
           <div class="mt-4 grid grid-cols-3 gap-2">
-            <div class="rounded-lg bg-slate-50 p-2 text-center dark:bg-slate-700/50">
-              <p class="text-lg font-bold text-violet-600 dark:text-violet-400">{{ friend.totalCheckinDays }}</p>
-              <p class="text-xs text-slate-500 dark:text-slate-400">天數</p>
+            <div class="border border-edge bg-surface p-2 text-center">
+              <p class="font-pixel text-lg text-acc">{{ friend.totalCheckinDays }}</p>
+              <p class="mt-1 text-[15px] text-muted">天數</p>
             </div>
-            <div class="rounded-lg bg-slate-50 p-2 text-center dark:bg-slate-700/50">
+            <div class="flex flex-col items-center justify-center border border-edge bg-surface p-2 text-center">
               <StreakBadge :streak="getUserStreak(friend)" size="sm" />
-              <p class="text-xs text-slate-500 dark:text-slate-400">連續</p>
+              <p class="mt-1 text-[15px] text-muted">連續</p>
             </div>
-            <div class="rounded-lg bg-slate-50 p-2 text-center dark:bg-slate-700/50">
-              <p class="text-lg font-bold text-emerald-600 dark:text-emerald-400">{{ getCompletionRate(friend) }}%</p>
-              <p class="text-xs text-slate-500 dark:text-slate-400">完成率</p>
+            <div class="border border-edge bg-surface p-2 text-center">
+              <p class="font-pixel text-lg text-acc">{{ getCompletionRate(friend) }}%</p>
+              <p class="mt-1 text-[15px] text-muted">完成率</p>
             </div>
           </div>
 
@@ -213,7 +215,7 @@ onMounted(async () => {
           <button
             v-if="myDetail"
             @click="toggleCompare(friend.discordUserId)"
-            class="mt-3 w-full rounded-lg border border-slate-200 py-2 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-700"
+            class="mt-3 w-full cursor-pointer border border-edge py-2 text-[15px] font-bold text-muted transition-colors hover:border-acc2 hover:text-acc2"
           >
             {{ compareUserId === friend.discordUserId ? '收起比較' : '與我比較' }}
           </button>
@@ -221,17 +223,17 @@ onMounted(async () => {
           <!-- 比較面板 -->
           <div
             v-if="compareUserId === friend.discordUserId && myDetail"
-            class="mt-3 rounded-lg bg-violet-50 p-3 dark:bg-violet-900/20"
+            class="mt-3 border border-edge bg-surface p-3"
           >
-            <div class="grid grid-cols-3 gap-2 text-center text-xs">
-              <div>
-                <p class="font-medium text-slate-600 dark:text-slate-300">你</p>
-                <p class="text-lg font-bold text-violet-600 dark:text-violet-400">{{ myDetail.totalCheckinDays }}</p>
+            <div class="grid grid-cols-3 gap-2 text-center text-[15px]">
+              <div class="min-w-0">
+                <p class="font-bold text-muted">你</p>
+                <p class="font-pixel text-lg text-acc">{{ myDetail.totalCheckinDays }}</p>
               </div>
-              <div class="flex items-center justify-center text-slate-400">VS</div>
-              <div>
-                <p class="font-medium text-slate-600 dark:text-slate-300">{{ friend.displayName }}</p>
-                <p class="text-lg font-bold text-violet-600 dark:text-violet-400">{{ friend.totalCheckinDays }}</p>
+              <div class="flex items-center justify-center font-pixel text-muted">VS</div>
+              <div class="min-w-0">
+                <p class="truncate font-bold text-muted">{{ friend.displayName }}</p>
+                <p class="font-pixel text-lg text-acc">{{ friend.totalCheckinDays }}</p>
               </div>
             </div>
           </div>
@@ -239,10 +241,10 @@ onMounted(async () => {
       </div>
 
       <!-- 空狀態 -->
-      <div v-else class="rounded-2xl border-2 border-dashed border-slate-300 p-12 text-center dark:border-slate-600">
-        <i class="bi bi-people text-4xl text-slate-300 dark:text-slate-600"></i>
-        <h3 class="mt-3 text-lg font-medium text-slate-600 dark:text-slate-400">還沒有追蹤任何人</h3>
-        <p class="mt-1 text-sm text-slate-400 dark:text-slate-500">使用上方搜尋來追蹤你的朋友吧！</p>
+      <div v-else class="border-2 border-dashed border-edge bg-surface p-12 text-center">
+        <i class="bi bi-people text-4xl text-acc"></i>
+        <h3 class="mt-3 text-lg font-bold text-ink">還沒有追蹤任何人</h3>
+        <p class="mt-1 text-[15px] text-muted">使用上方搜尋來追蹤你的朋友吧！</p>
       </div>
     </div>
   </AppShell>

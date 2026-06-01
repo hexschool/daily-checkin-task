@@ -26,24 +26,24 @@ function getProgressToNextLevel(): number {
   <div class="flex items-center gap-3">
     <!-- Level badge -->
     <div
-      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 text-sm font-bold text-white shadow-lg shadow-violet-500/25"
+      class="flex h-10 w-10 shrink-0 items-center justify-center bg-acc font-pixel text-[15px] text-acc-ink shadow-[3px_3px_0_var(--color-acc-strong)]"
     >
       L{{ levelInfo.level }}
     </div>
 
     <!-- Progress bar + info -->
     <div class="min-w-0 flex-1">
-      <div class="flex items-baseline justify-between">
-        <span class="text-sm font-semibold text-slate-800 dark:text-white">
+      <div class="flex items-baseline justify-between gap-2">
+        <span class="text-[15px] font-bold text-ink">
           {{ levelInfo.title }}
         </span>
-        <span class="text-xs text-slate-500 dark:text-slate-400">
+        <span class="font-pixel text-[15px] text-acc">
           {{ levelInfo.currentXP }} XP
         </span>
       </div>
-      <div class="mt-1 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+      <div class="mt-1.5 h-2.5 overflow-hidden border border-edge bg-base">
         <div
-          class="h-full rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all duration-500"
+          class="h-full bg-acc shadow-[0_0_9px_color-mix(in_srgb,var(--color-acc)_45%,transparent)] transition-all duration-500"
           :style="{ width: `${getProgressToNextLevel()}%` }"
         ></div>
       </div>

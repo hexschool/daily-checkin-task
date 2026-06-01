@@ -1,4 +1,163 @@
 @import "tailwindcss";
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
-@custom-variant dark (&:where(.dark, .dark *));
+/* ────────────────────────────────────────────
+   街機風設計 token（萊姆綠主色 + 電光青今日色）
+   單色為主，狀態用「填滿 / 外框 / 閃爍」區分
+──────────────────────────────────────────── */
+@theme {
+  --font-pixel: "Silkscreen", "JetBrains Mono", ui-monospace, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-base: #0b0c11;     /* 頁面底色 */
+  --color-surface: #13151e;  /* 區塊／卡片底 */
+  --color-panel: #171a25;    /* 面板底 */
+  --color-edge: #2c3142;     /* 邊框／格線 */
+  --color-ink: #f3f4fb;      /* 主要文字 */
+  --color-muted: #b6bcd2;    /* 次要文字（已提高對比） */
+
+  --color-acc: #caf53e;      /* 主色 · 萊姆綠 */
+  --color-acc-strong: #7e9c1e;
+  --color-acc-ink: #0b0c11;  /* 主色底上的文字 */
+  --color-acc2: #38e2ff;     /* 今日色 · 電光青 */
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    background-color: var(--color-base);
+    color: var(--color-ink);
+    font-family: var(--font-mono);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    position: relative;
+  }
+  /* 掃描線 + 角落光暈 */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px) 0 0 / 100% 3px,
+      radial-gradient(circle at 16% -6%, color-mix(in srgb, var(--color-acc) 12%, transparent), transparent 42%),
+      radial-gradient(circle at 94% 18%, color-mix(in srgb, var(--color-acc2) 10%, transparent), transparent 46%);
+  }
+  /* 背景格線（中心淡出） */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.38;
+    background-image:
+      linear-gradient(var(--color-edge) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-edge) 1px, transparent 1px);
+    background-size: 44px 44px;
+    -webkit-mask-image: radial-gradient(circle at 50% 22%, #000, transparent 80%);
+    mask-image: radial-gradient(circle at 50% 22%, #000, transparent 80%);
+  }
+  #app {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* ── 動畫 ── */
+@keyframes arcade-blink {
+  50% { opacity: 0.45; }
+}
+@keyframes arcade-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes arcade-pop {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+@layer components {
+  /* 面板 */
+  .arcade-panel {
+    border: 1px solid var(--color-edge);
+    background: var(--color-panel);
+  }
+  /* 區塊小標 */
+  .arcade-eyebrow {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .arcade-eyebrow::before {
+    content: "";
+    width: 5px;
+    height: 15px;
+    background: var(--color-acc);
+  }
+  /* 主要按鈕（硬陰影、按下位移） */
+  .arcade-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 11px 16px;
+    white-space: nowrap;
+    transition: transform 0.1s, box-shadow 0.1s, border-color 0.15s, color 0.15s;
+    color: var(--color-acc-ink);
+    background: var(--color-acc);
+    box-shadow: 3px 3px 0 var(--color-acc-strong);
+  }
+  .arcade-btn:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--color-acc-strong);
+  }
+  /* 次要按鈕 */
+  .arcade-btn-alt {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 11px 16px;
+    white-space: nowrap;
+    color: var(--color-ink);
+    border: 1px solid var(--color-edge);
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .arcade-btn-alt:hover {
+    border-color: var(--color-acc2);
+    color: var(--color-acc2);
+  }
+  /* 徽章 */
+  .arcade-badge {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 2px 10px;
+    white-space: nowrap;
+  }
+  .arcade-badge-done {
+    color: var(--color-acc);
+    border: 1px solid var(--color-acc);
+  }
+  .arcade-badge-today {
+    color: var(--color-acc-ink);
+    background: var(--color-acc2);
+  }
+}
+
+/* 細捲軸 */
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: var(--color-base); }
+*::-webkit-scrollbar-thumb { background: var(--color-edge); border: 2px solid var(--color-base); }
+*::-webkit-scrollbar-thumb:hover { background: var(--color-acc-strong); }

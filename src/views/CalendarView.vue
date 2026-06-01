@@ -4,9 +4,9 @@ import { useRoute, RouterLink } from 'vue-router'
 import AppShell from '@/components/layout/AppShell.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import ErrorMessage from '@/components/common/ErrorMessage.vue'
-import ContributionHeatmap from '@/components/gamification/ContributionHeatmap.vue'
 import { useCheckinStore } from '@/stores/checkin'
 import { useIdentityStore } from '@/stores/identity'
+import { useStreaks } from '@/composables/useStreaks'
 import type { DailyStat } from '@/types/checkin'
 
 const route = useRoute()
@@ -28,7 +28,7 @@ const checkinModeLabel = computed(() => {
 
 const checkinModeDescription = computed(() => {
   switch (checkinStore.scheduleStats?.checkinMode) {
-    case 'standard': return '僅限貼文當天打卡'
+    case 'standard': return '僅限貼文當天打卡，錯過當日即中斷連續紀錄'
     case 'extended': return `可在討論串的隔天，延後 ${checkinStore.scheduleStats?.extendedHours || 0} 小時內打卡`
     case 'all_period': return '活動期間內任何時段打卡皆可被計算'
     default: return '24 小時內有效'
@@ -41,8 +41,8 @@ const activityPeriod = computed(() => {
   if (!stats || stats.length === 0) return null
   const times = stats.map(s => new Date(s.date).getTime())
   const fmt = (t: number) =>
-    new Date(t).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' })
-  return `${fmt(Math.min(...times))} – ${fmt(Math.max(...times))}`
+    new Date(t).toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' }).replace(/\//g, '/')
+  return `${fmt(Math.min(...times))} ▸ ${fmt(Math.max(...times))}`
 })
 
 // 選中的日期
@@ -57,30 +57,11 @@ const myCheckinStatus = computed(() => {
   return status
 })
 
-// 每日任務：取最近 5 天（新到舊），數量可視需求調整
-const dailyTasks = computed(() => {
-  const stats = checkinStore.scheduleStats?.dailyStats
-  if (!stats) return []
-  return [...stats]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 5)
+// 個人連續天數（已設定身份才顯示）
+const myStreak = computed(() => {
+  if (!myCheckinStatus.value || !checkinStore.scheduleStats) return null
+  return useStreaks(myCheckinStatus.value, checkinStore.scheduleStats.dailyStats).currentStreak
 })
-
-function handleDayClick(dayLabel: string) {
-  const stat = checkinStore.scheduleStats?.dailyStats.find(s => s.dayLabel === dayLabel)
-  if (stat) {
-    selectedDay.value = stat
-  }
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('zh-TW', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    weekday: 'short',
-  })
-}
 
 // 以本地年/月/日判斷某日期是否為今天 / 昨天
 function isSameLocalDate(a: Date, b: Date): boolean {
@@ -90,15 +71,64 @@ function isSameLocalDate(a: Date, b: Date): boolean {
     a.getDate() === b.getDate()
   )
 }
-
 function isToday(dateStr: string): boolean {
   return isSameLocalDate(new Date(dateStr), new Date())
 }
-
 function isYesterday(dateStr: string): boolean {
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
   return isSameLocalDate(new Date(dateStr), yesterday)
+}
+
+type CellState = 'done' | 'today' | 'miss' | 'future'
+interface HeatCell {
+  dayNumber: number
+  dayLabel?: string
+  state: CellState
+  stat?: DailyStat
+}
+
+// 熱力圖格子：1..預計天數，依發佈與個人打卡狀態決定狀態
+const heatCells = computed<HeatCell[]>(() => {
+  const stats = checkinStore.scheduleStats
+  if (!stats) return []
+  const total = Math.max(stats.expectedTasks || 0, stats.dailyStats.length)
+  const byNum = new Map(stats.dailyStats.map(s => [s.dayNumber, s]))
+  const cells: HeatCell[] = []
+  for (let i = 1; i <= total; i++) {
+    const stat = byNum.get(i)
+    if (!stat) {
+      cells.push({ dayNumber: i, state: 'future' })
+      continue
+    }
+    let state: CellState = 'miss'
+    if (isToday(stat.date)) state = 'today'
+    else if (myCheckinStatus.value?.[stat.dayLabel]) state = 'done'
+    cells.push({ dayNumber: i, dayLabel: stat.dayLabel, state, stat })
+  }
+  return cells
+})
+
+// 每日任務：取最近 5 天（新到舊）
+const dailyTasks = computed(() => {
+  const stats = checkinStore.scheduleStats?.dailyStats
+  if (!stats) return []
+  return [...stats]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5)
+})
+
+function selectCell(cell: HeatCell) {
+  if (cell.stat) selectedDay.value = cell.stat
+}
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('zh-TW', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'short',
+  })
 }
 
 onMounted(async () => {
@@ -113,7 +143,7 @@ onMounted(async () => {
 
 <template>
   <AppShell>
-    <div v-if="checkinStore.isLoading && !checkinStore.scheduleStats" class="flex justify-center py-20">
+    <div v-if="checkinStore.isLoading && !checkinStore.scheduleStats" class="flex justify-center py-24">
       <LoadingSpinner size="lg" />
     </div>
 
@@ -123,172 +153,159 @@ onMounted(async () => {
       @retry="checkinStore.fetchScheduleStats(scheduleId)"
     />
 
-    <div v-else-if="checkinStore.scheduleStats" class="space-y-6">
-      <!-- Header -->
-      <div>
-        <h1 class="text-2xl font-bold text-slate-800 dark:text-white">
-          <i class="bi bi-calendar3 mr-2 text-violet-500"></i>
-          打卡日曆
-        </h1>
-        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+    <div v-else-if="checkinStore.scheduleStats" class="space-y-7">
+      <!-- Hero -->
+      <header
+        class="border-2 border-ink bg-surface p-6 shadow-[7px_7px_0_var(--color-acc)] [animation:arcade-pop_.5s_.05s_cubic-bezier(.2,.9,.3,1.2)_both]"
+      >
+        <div class="text-[15px] font-bold tracking-[0.14em] text-muted">▶ CHECK-IN CALENDAR</div>
+        <h1 class="my-3 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-4xl">
           {{ checkinStore.scheduleStats.scheduleName }}
-          <span v-if="activityPeriod"> · {{ activityPeriod }}</span>
-        </p>
-      </div>
-
-      <!-- 打卡模式說明 -->
-      <div class="flex items-start gap-3 rounded-xl border border-violet-100 bg-violet-50/50 px-4 py-3 dark:border-violet-800 dark:bg-violet-900/20">
-        <i class="bi bi-clock-history mt-0.5 text-violet-500"></i>
-        <div>
-          <p class="text-sm font-medium text-slate-700 dark:text-slate-200">{{ checkinModeLabel }}</p>
-          <p class="text-xs text-slate-500 dark:text-slate-400">{{ checkinModeDescription }}</p>
+        </h1>
+        <div class="mt-3 flex flex-wrap items-center gap-3">
+          <span
+            v-if="myStreak !== null"
+            class="flex items-center gap-1.5 border border-acc px-3 py-1.5 text-[15px] font-bold text-acc"
+          >
+            <i class="bi bi-fire"></i> 連續 {{ myStreak }} 天
+          </span>
+          <span
+            v-if="activityPeriod"
+            class="border border-dashed border-acc px-3 py-1.5 text-[15px] font-bold tracking-wide text-acc"
+          >{{ activityPeriod }}</span>
         </div>
-      </div>
+      </header>
 
-      <!-- 切換：個人 / 全局 -->
-      <div v-if="myCheckinStatus" class="flex gap-2">
-        <span class="text-sm text-slate-500 dark:text-slate-400">
-          顯示你的個人打卡狀態
-        </span>
+      <!-- 打卡模式 -->
+      <div class="flex flex-wrap items-center gap-3 border border-edge bg-surface px-4 py-3.5">
+        <span class="bg-acc px-2.5 py-1.5 text-[15px] font-bold text-acc-ink">{{ checkinModeLabel }}</span>
+        <p class="text-[15px] text-muted">{{ checkinModeDescription }}</p>
       </div>
 
       <!-- 熱力圖 -->
-      <ContributionHeatmap
-        variant="strip"
-        :daily-stats="checkinStore.scheduleStats.dailyStats"
-        :checkin-status="myCheckinStatus"
-        :expected-tasks="checkinStore.scheduleStats.expectedTasks"
-        :clickable="true"
-        @day-click="handleDayClick"
-      />
+      <section class="arcade-panel p-5">
+        <div class="arcade-eyebrow mb-4">修煉軌跡 · {{ heatCells.length }} DAYS</div>
+        <div class="grid grid-cols-[repeat(10,minmax(0,1fr))] gap-1.5 sm:grid-cols-[repeat(15,minmax(0,1fr))]">
+          <button
+            v-for="cell in heatCells"
+            :key="cell.dayNumber"
+            type="button"
+            :disabled="!cell.stat"
+            :title="cell.dayLabel || `Day ${cell.dayNumber}`"
+            class="aspect-square border transition-transform hover:scale-110 disabled:cursor-default disabled:hover:scale-100"
+            :class="{
+              'border-acc bg-acc shadow-[0_0_9px_color-mix(in_srgb,var(--color-acc)_40%,transparent)]': cell.state === 'done',
+              'border-2 border-acc2 bg-transparent shadow-[0_0_14px_color-mix(in_srgb,var(--color-acc2)_55%,transparent)] [animation:arcade-blink_1.1s_steps(2,jump-none)_infinite]': cell.state === 'today',
+              'border-edge bg-[color-mix(in_srgb,var(--color-ink)_9%,var(--color-base))]': cell.state === 'miss',
+              'border-edge bg-base': cell.state === 'future',
+            }"
+            @click="selectCell(cell)"
+          ></button>
+        </div>
+        <div class="mt-4 flex flex-wrap gap-4 text-[15px] text-muted">
+          <span class="flex items-center gap-2"><i class="inline-block h-3.5 w-3.5 border border-acc bg-acc"></i> 已完成</span>
+          <span class="flex items-center gap-2"><i class="inline-block h-3.5 w-3.5 border-2 border-acc2"></i> 今日</span>
+          <span class="flex items-center gap-2"><i class="inline-block h-3.5 w-3.5 border border-edge bg-[color-mix(in_srgb,var(--color-ink)_9%,var(--color-base))]"></i> 未完成</span>
+          <span class="flex items-center gap-2"><i class="inline-block h-3.5 w-3.5 border border-edge bg-base"></i> 未發佈</span>
+        </div>
+      </section>
 
       <!-- 選中日期預覽 -->
       <Transition name="slide-up">
-        <div
-          v-if="selectedDay"
-          class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800"
-        >
-          <div class="flex items-center justify-between">
+        <section v-if="selectedDay" class="arcade-panel p-5">
+          <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h3 class="text-lg font-bold text-slate-800 dark:text-white">{{ selectedDay.dayLabel }}</h3>
-              <p class="text-sm text-slate-500 dark:text-slate-400">{{ formatDate(selectedDay.date) }}</p>
+              <h3 class="font-pixel text-lg text-ink">{{ selectedDay.dayLabel }}</h3>
+              <p class="mt-1 text-[15px] text-muted">{{ formatDate(selectedDay.date) }}</p>
             </div>
             <div class="flex items-center gap-3">
-              <div class="rounded-xl bg-violet-50 px-4 py-2 dark:bg-violet-900/30">
-                <span class="text-lg font-bold text-violet-600 dark:text-violet-400">{{ selectedDay.checkinCount }}</span>
-                <span class="ml-1 text-sm text-slate-500 dark:text-slate-400">人打卡</span>
+              <div class="border border-edge px-4 py-2">
+                <span class="font-pixel text-lg text-acc">{{ selectedDay.checkinCount }}</span>
+                <span class="ml-1 text-[15px] text-muted">人打卡</span>
               </div>
               <RouterLink
                 :to="{ name: 'day-detail', params: { scheduleId, dayLabel: selectedDay.dayLabel } }"
-                class="rounded-xl bg-violet-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-700"
-              >
-                查看詳情
-              </RouterLink>
+                class="arcade-btn-alt"
+              >查看詳情 →</RouterLink>
             </div>
           </div>
-
-          <!-- 顯示自己是否有打卡 -->
           <div
             v-if="myCheckinStatus"
-            class="mt-3 flex items-center gap-2 text-sm"
-            :class="myCheckinStatus[selectedDay.dayLabel] ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'"
+            class="mt-4 flex items-center gap-2 text-[15px]"
+            :class="myCheckinStatus[selectedDay.dayLabel] ? 'text-acc' : 'text-muted'"
           >
-            <i :class="myCheckinStatus[selectedDay.dayLabel] ? 'bi bi-check-circle-fill' : 'bi bi-x-circle'"></i>
-            {{ myCheckinStatus[selectedDay.dayLabel] ? '你已打卡' : '你未打卡' }}
+            <i :class="myCheckinStatus[selectedDay.dayLabel] ? 'bi bi-check-circle-fill' : 'bi bi-circle'"></i>
+            {{ myCheckinStatus[selectedDay.dayLabel] ? '你已打卡' : '你尚未打卡' }}
           </div>
-        </div>
+        </section>
       </Transition>
 
       <!-- 每日任務 -->
-      <div v-if="dailyTasks.length" class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
-        <h3 class="mb-3 font-semibold text-slate-800 dark:text-white">
-          <i class="bi bi-list-check mr-2 text-violet-500"></i>
-          每日任務
-        </h3>
-
-        <!-- 如何參與說明 -->
-        <div class="mb-3 flex items-start gap-3 rounded-xl border border-amber-100 bg-amber-50/60 px-4 py-3 dark:border-amber-900/40 dark:bg-amber-900/10">
-          <i class="bi bi-lightbulb-fill mt-0.5 text-amber-500"></i>
-          <div>
-            <p class="text-sm font-medium text-slate-700 dark:text-slate-200">如何參與</p>
-            <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-              點任務 → 進入 Discord 頻道 → 留言即自動打卡
-              <span class="font-medium text-slate-600 dark:text-slate-300">（資料每小時更新一次）</span>
-            </p>
-          </div>
-        </div>
-
-        <div class="space-y-2">
+      <section v-if="dailyTasks.length" class="arcade-panel p-5">
+        <div class="arcade-eyebrow mb-4">每日任務 · QUESTS</div>
+        <div class="space-y-2.5">
           <div
             v-for="task in dailyTasks"
             :key="task.dayLabel"
-            class="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3 dark:bg-slate-700/50"
+            class="flex items-center gap-3 border border-edge bg-surface p-4 transition-all hover:translate-x-1 hover:border-acc"
           >
-            <!-- 左側：任務標題 + 狀態徽章 -->
-            <div class="flex min-w-0 items-center gap-3">
-              <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900/40">
-                <i class="bi bi-calendar-check text-violet-600 dark:text-violet-400"></i>
-              </div>
-              <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                  <p class="text-sm font-medium text-slate-700 dark:text-slate-200">{{ task.dayLabel }}</p>
-                  <span
-                    v-if="isToday(task.date)"
-                    class="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-600 dark:bg-amber-900/40 dark:text-amber-400"
-                  >今日</span>
-                  <span
-                    v-if="myCheckinStatus?.[task.dayLabel]"
-                    class="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400"
-                  >已完成</span>
-                </div>
-                <p class="truncate text-xs text-slate-500 dark:text-slate-400">{{ task.threadTitle }}</p>
+            <span
+              class="w-16 shrink-0 font-mono text-[15px] font-extrabold tracking-wide"
+              :class="isToday(task.date) ? 'text-acc2' : 'text-ink'"
+            >{{ task.dayLabel?.toUpperCase() }}</span>
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-center gap-2.5 text-[17px] font-bold text-ink">
+                <span>{{ task.threadTitle }}</span>
+                <span v-if="isToday(task.date)" class="arcade-badge arcade-badge-today">今日</span>
+                <span v-else-if="myCheckinStatus?.[task.dayLabel]" class="arcade-badge arcade-badge-done">已完成</span>
               </div>
             </div>
-
-            <!-- 右側：前往打卡（今日）/ 前往（昨日）— 連 Discord 討論串 -->
             <a
               v-if="isToday(task.date)"
               :href="task.threadUrl"
               target="_blank"
               rel="noopener noreferrer"
-              class="flex shrink-0 items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-violet-700"
-            >
-              <i class="bi bi-discord"></i>
-              前往打卡
-            </a>
+              class="arcade-btn shrink-0"
+            ><i class="bi bi-discord"></i> 前往打卡</a>
             <a
               v-else-if="isYesterday(task.date)"
               :href="task.threadUrl"
               target="_blank"
               rel="noopener noreferrer"
-              class="flex shrink-0 items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
-            >
-              前往
-              <i class="bi bi-box-arrow-up-right"></i>
-            </a>
+              class="arcade-btn-alt shrink-0"
+            >前往 ↗</a>
           </div>
         </div>
-      </div>
 
-      <!-- 統計資訊 -->
-      <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div class="rounded-xl border border-slate-200 bg-white p-4 text-center dark:border-slate-700 dark:bg-slate-800">
-          <p class="text-2xl font-bold text-slate-800 dark:text-white">{{ checkinStore.scheduleStats.dailyTasks }}</p>
-          <p class="text-xs text-slate-500 dark:text-slate-400">已發佈天數</p>
+        <!-- 如何參與 -->
+        <div class="mt-4 flex items-center gap-3 border border-dashed border-acc px-4 py-3.5 [background:color-mix(in_srgb,var(--color-acc)_7%,transparent)]">
+          <span class="text-xl">💡</span>
+          <p class="text-[15px] text-muted">
+            <b class="font-bold text-acc">如何參與</b>　點任務 → 進入 Discord 頻道 → 留言即自動打卡
+            <span class="font-semibold text-ink">（資料每小時更新一次）</span>
+          </p>
         </div>
-        <div class="rounded-xl border border-slate-200 bg-white p-4 text-center dark:border-slate-700 dark:bg-slate-800">
-          <p class="text-2xl font-bold text-slate-800 dark:text-white">{{ checkinStore.scheduleStats.expectedTasks }}</p>
-          <p class="text-xs text-slate-500 dark:text-slate-400">預計天數</p>
+      </section>
+
+      <!-- 統計 -->
+      <section class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="arcade-panel p-5 text-center">
+          <div class="font-pixel text-2xl text-acc">{{ checkinStore.scheduleStats.dailyTasks }}</div>
+          <div class="mt-3 text-[15px] font-semibold text-muted">已發佈天數</div>
         </div>
-        <div class="rounded-xl border border-slate-200 bg-white p-4 text-center dark:border-slate-700 dark:bg-slate-800">
-          <p class="text-2xl font-bold text-slate-800 dark:text-white">{{ checkinStore.scheduleStats.totalCheckins }}</p>
-          <p class="text-xs text-slate-500 dark:text-slate-400">總打卡次數</p>
+        <div class="arcade-panel p-5 text-center">
+          <div class="font-pixel text-2xl text-acc">{{ checkinStore.scheduleStats.expectedTasks }}</div>
+          <div class="mt-3 text-[15px] font-semibold text-muted">預計天數</div>
         </div>
-        <div class="rounded-xl border border-slate-200 bg-white p-4 text-center dark:border-slate-700 dark:bg-slate-800">
-          <p class="text-2xl font-bold text-slate-800 dark:text-white">{{ checkinStore.scheduleStats.uniqueUsers }}</p>
-          <p class="text-xs text-slate-500 dark:text-slate-400">參與人數</p>
+        <div class="arcade-panel p-5 text-center">
+          <div class="font-pixel text-2xl text-acc">{{ checkinStore.scheduleStats.totalCheckins }}</div>
+          <div class="mt-3 text-[15px] font-semibold text-muted">總打卡次數</div>
         </div>
-      </div>
+        <div class="arcade-panel p-5 text-center">
+          <div class="font-pixel text-2xl text-acc">{{ checkinStore.scheduleStats.uniqueUsers }}</div>
+          <div class="mt-3 text-[15px] font-semibold text-muted">參與人數</div>
+        </div>
+      </section>
     </div>
   </AppShell>
 </template>
@@ -298,7 +315,6 @@ onMounted(async () => {
 .slide-up-leave-active {
   transition: all 0.3s ease;
 }
-
 .slide-up-enter-from,
 .slide-up-leave-to {
   opacity: 0;

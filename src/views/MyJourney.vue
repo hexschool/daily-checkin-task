@@ -177,77 +177,84 @@ onMounted(async () => {
       @retry="checkinStore.fetchScheduleStats(scheduleId)"
     />
 
-    <div v-else-if="checkinStore.scheduleStats" class="space-y-6">
+    <div v-else-if="checkinStore.scheduleStats" class="space-y-7">
       <!-- 個人 Header -->
-      <div v-if="myUser" class="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
-        <div class="flex items-center justify-between">
+      <header
+        v-if="myUser"
+        class="border-2 border-ink bg-surface p-6 shadow-[7px_7px_0_var(--color-acc)] [animation:arcade-pop_.5s_.05s_cubic-bezier(.2,.9,.3,1.2)_both]"
+      >
+        <div class="flex flex-wrap items-center justify-between gap-4">
           <div class="flex items-center gap-4">
             <img
               :src="avatarUrl(myUser.avatarUrl)"
               :alt="myUser.displayName"
-              class="h-16 w-16 rounded-2xl ring-2 ring-violet-200 dark:ring-violet-700"
+              class="h-16 w-16 rounded-full border-2 border-acc shadow-[0_0_14px_color-mix(in_srgb,var(--color-acc)_40%,transparent)]"
             />
             <div>
-              <h2 class="text-xl font-bold text-slate-800 dark:text-white">
+              <div class="text-[15px] font-bold tracking-[0.14em] text-muted">▶ MY JOURNEY</div>
+              <h2 class="my-1 text-2xl font-bold leading-tight tracking-tight text-ink sm:text-3xl">
                 {{ myUser.displayName }}
               </h2>
-              <p class="text-sm text-slate-500 dark:text-slate-400">@{{ myUser.username }}</p>
+              <p class="font-mono text-[15px] text-muted">@{{ myUser.username }}</p>
             </div>
           </div>
           <div class="flex items-center gap-3">
             <StreakBadge :streak="streakResult.currentStreak" size="lg" />
             <button
+              type="button"
               @click="clearIdentity"
-              class="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700"
+              class="flex h-9 w-9 items-center justify-center border border-edge text-muted transition-colors hover:border-acc2 hover:text-acc2"
               title="切換身份"
+              aria-label="切換身份"
             >
-              <i class="bi bi-person-x text-sm"></i>
+              <i class="bi bi-person-x text-base"></i>
             </button>
           </div>
         </div>
 
         <!-- Level Progress -->
-        <div v-if="levelInfo" class="mt-4">
+        <div v-if="levelInfo" class="mt-5">
           <LevelProgress :level-info="levelInfo" />
         </div>
-      </div>
+      </header>
 
       <!-- 身份搜尋引導（未設定時） -->
-      <div v-else class="rounded-2xl border border-slate-200 bg-white p-6 text-center dark:border-slate-700 dark:bg-slate-800">
-        <i class="bi bi-person-badge text-4xl text-violet-400"></i>
-        <h2 class="mt-3 text-lg font-bold text-slate-800 dark:text-white">找到你自己</h2>
-        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">從列表中找到自己，點擊「這是我」開啟個人化旅程</p>
+      <div v-else class="arcade-panel p-8 text-center">
+        <i class="bi bi-person-badge text-4xl text-acc [text-shadow:0_0_18px_color-mix(in_srgb,var(--color-acc)_45%,transparent)]"></i>
+        <h2 class="mt-4 text-xl font-bold tracking-tight text-ink">找到你自己</h2>
+        <p class="mt-2 text-[15px] text-muted">從列表中找到自己，點擊「這是我」開啟個人化旅程</p>
 
         <!-- 點擊開啟身份選擇彈窗 -->
         <button
           type="button"
           @click="openIdentityModal"
-          class="relative mx-auto mt-4 flex w-full max-w-sm items-center rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-left text-sm text-slate-400 transition-colors hover:border-violet-400 hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:hover:bg-slate-800"
+          class="relative mx-auto mt-5 flex w-full max-w-sm cursor-pointer items-center border border-edge bg-base py-3 pl-10 pr-4 text-left text-[15px] text-muted transition-colors hover:border-acc hover:text-ink"
+          aria-label="開啟身份選擇"
         >
-          <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-muted"></i>
           搜尋暱稱或 Discord ID...
         </button>
       </div>
 
       <!-- 全局統計（未設定身份時） -->
       <div v-if="!myUser" class="grid grid-cols-3 gap-3">
-        <div class="rounded-xl border border-slate-200 bg-white p-4 text-center dark:border-slate-700 dark:bg-slate-800">
-          <p class="text-2xl font-bold text-violet-600 dark:text-violet-400">
+        <div class="arcade-panel p-5 text-center">
+          <div class="font-pixel text-2xl text-acc">
             {{ checkinStore.scheduleStats.dailyTasks }}/{{ checkinStore.scheduleStats.expectedTasks }}
-          </p>
-          <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">已發佈天數</p>
+          </div>
+          <div class="mt-3 text-[15px] font-semibold text-muted">已發佈天數</div>
         </div>
-        <div class="rounded-xl border border-slate-200 bg-white p-4 text-center dark:border-slate-700 dark:bg-slate-800">
-          <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+        <div class="arcade-panel p-5 text-center">
+          <div class="font-pixel text-2xl text-acc">
             {{ checkinStore.scheduleStats.uniqueUsers }}
-          </p>
-          <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">參與人數</p>
+          </div>
+          <div class="mt-3 text-[15px] font-semibold text-muted">參與人數</div>
         </div>
-        <div class="rounded-xl border border-slate-200 bg-white p-4 text-center dark:border-slate-700 dark:bg-slate-800">
-          <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+        <div class="arcade-panel p-5 text-center">
+          <div class="font-pixel text-2xl text-acc">
             {{ checkinStore.scheduleStats.totalCheckins }}
-          </p>
-          <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">總打卡次數</p>
+          </div>
+          <div class="mt-3 text-[15px] font-semibold text-muted">總打卡次數</div>
         </div>
       </div>
 
@@ -255,17 +262,14 @@ onMounted(async () => {
       <AchievementList v-if="myUser && achievements.length" :achievements="achievements" />
 
       <!-- 追蹤好友預覽 -->
-      <div v-if="friendList.length" class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
-        <div class="mb-3 flex items-center justify-between">
-          <h3 class="font-semibold text-slate-800 dark:text-white">
-            <i class="bi bi-people mr-2 text-violet-500"></i>
-            追蹤好友
-          </h3>
+      <section v-if="friendList.length" class="arcade-panel p-5">
+        <div class="mb-4 flex items-center justify-between">
+          <div class="arcade-eyebrow">追蹤好友 · FRIENDS</div>
           <RouterLink
             :to="{ name: 'friends', params: { scheduleId } }"
-            class="text-sm text-violet-600 hover:text-violet-700 dark:text-violet-400"
+            class="text-[15px] font-bold text-muted transition-colors hover:text-acc2"
           >
-            查看全部
+            查看全部 →
           </RouterLink>
         </div>
         <div class="grid gap-3 sm:grid-cols-3">
@@ -273,21 +277,21 @@ onMounted(async () => {
             v-for="friend in friendList"
             :key="friend.discordUserId"
             :to="{ name: 'user-detail', params: { scheduleId, discordUserId: friend.discordUserId } }"
-            class="flex items-center gap-3 rounded-xl bg-slate-50 p-3 transition-colors hover:bg-slate-100 dark:bg-slate-700/50 dark:hover:bg-slate-700"
+            class="flex items-center gap-3 border border-edge bg-surface p-3 transition-all hover:translate-x-1 hover:border-acc"
           >
             <img
               :src="avatarUrl(friend.avatarUrl)"
               :alt="friend.displayName"
-              class="h-10 w-10 rounded-full ring-2 ring-slate-100 dark:ring-slate-600"
+              class="h-10 w-10 rounded-full border border-edge"
             />
             <div class="min-w-0 flex-1">
-              <p class="truncate text-sm font-medium text-slate-700 dark:text-slate-200">{{ friend.displayName }}</p>
-              <p class="text-xs text-slate-500">{{ friend.totalCheckinDays }} 天</p>
+              <p class="truncate text-[15px] font-bold text-ink">{{ friend.displayName }}</p>
+              <p class="font-mono text-[15px] text-muted">{{ friend.totalCheckinDays }} 天</p>
             </div>
             <StreakBadge :streak="getFriendStreak(friend.checkinStatus)" size="sm" />
           </RouterLink>
         </div>
-      </div>
+      </section>
     </div>
 
     <!-- 身份選擇彈窗 -->
@@ -298,21 +302,22 @@ onMounted(async () => {
           class="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4"
         >
           <!-- 背景遮罩 -->
-          <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="closeIdentityModal"></div>
+          <div class="absolute inset-0 bg-base/80 backdrop-blur-sm" @click="closeIdentityModal"></div>
 
           <!-- 彈窗主體 -->
           <div
-            class="relative flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-t-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-800 sm:rounded-2xl"
+            class="relative flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden border border-edge bg-panel shadow-[8px_8px_0_var(--color-acc)]"
           >
             <!-- 標題列 -->
-            <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-700">
+            <div class="flex items-center justify-between border-b border-edge px-5 py-4">
               <div class="flex items-center gap-2">
-                <i class="bi bi-person-badge text-violet-500"></i>
-                <h2 class="text-base font-bold text-slate-800 dark:text-white">找到你自己</h2>
+                <i class="bi bi-person-badge text-acc"></i>
+                <h2 class="text-base font-bold text-ink">找到你自己</h2>
               </div>
               <button
+                type="button"
                 @click="closeIdentityModal"
-                class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700"
+                class="flex h-8 w-8 items-center justify-center border border-edge text-muted transition-colors hover:border-acc2 hover:text-acc2"
                 aria-label="關閉"
               >
                 <i class="bi bi-x-lg"></i>
@@ -320,19 +325,21 @@ onMounted(async () => {
             </div>
 
             <!-- 搜尋框 -->
-            <div class="border-b border-slate-100 p-4 dark:border-slate-700">
+            <div class="border-b border-edge p-4">
               <div class="relative">
                 <input
                   ref="identityInputRef"
                   v-model="identitySearch"
                   type="text"
                   placeholder="搜尋暱稱或 Discord ID..."
-                  class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-10 text-sm text-slate-800 placeholder-slate-400 transition-colors focus:border-violet-500 focus:bg-white focus:ring-1 focus:ring-violet-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:focus:bg-slate-800"
+                  class="w-full border border-edge bg-base py-3 pl-10 pr-10 text-[15px] text-ink placeholder-muted transition-colors focus:border-acc focus:outline-none focus:ring-1 focus:ring-acc"
                 />
-                <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-muted"></i>
                 <button
                   v-if="identitySearch"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white"
+                  type="button"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-muted transition-colors hover:text-acc2"
+                  aria-label="清除搜尋"
                   @click="identitySearch = ''; searchResults = []"
                 >
                   <i class="bi bi-x-lg text-sm"></i>
@@ -347,33 +354,34 @@ onMounted(async () => {
               </div>
 
               <div v-else-if="displayUsers.length === 0 && identitySearch.trim()" class="p-8 text-center">
-                <i class="bi bi-search text-2xl text-slate-300 dark:text-slate-600"></i>
-                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">找不到「{{ identitySearch }}」</p>
+                <i class="bi bi-search text-2xl text-muted"></i>
+                <p class="mt-3 text-[15px] text-muted">找不到「{{ identitySearch }}」</p>
               </div>
 
               <div v-else-if="displayUsers.length === 0" class="p-8 text-center">
-                <i class="bi bi-people text-2xl text-slate-300 dark:text-slate-600"></i>
-                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">目前沒有可選的使用者</p>
+                <i class="bi bi-people text-2xl text-muted"></i>
+                <p class="mt-3 text-[15px] text-muted">目前沒有可選的使用者</p>
               </div>
 
               <div
                 v-for="user in displayUsers"
                 :key="user.discordUserId"
-                class="flex items-center gap-3 border-b border-slate-50 px-5 py-3 last:border-0 dark:border-slate-700/30"
+                class="flex items-center gap-3 border-b border-edge px-5 py-3 last:border-0"
               >
                 <img
                   :src="avatarUrl(user.avatarUrl)"
                   :alt="user.displayName"
-                  class="h-10 w-10 shrink-0 rounded-full ring-1 ring-slate-100 dark:ring-slate-700"
+                  class="h-10 w-10 shrink-0 rounded-full border border-edge"
                 />
                 <div class="min-w-0 flex-1">
-                  <p class="truncate text-sm font-medium text-slate-800 dark:text-white">{{ user.displayName }}</p>
-                  <p class="truncate text-xs text-slate-500 dark:text-slate-400">@{{ user.username }}</p>
+                  <p class="truncate text-[15px] font-bold text-ink">{{ user.displayName }}</p>
+                  <p class="truncate font-mono text-[15px] text-muted">@{{ user.username }}</p>
                 </div>
-                <span class="shrink-0 text-xs text-slate-400">{{ user.totalCheckinDays }} 天</span>
+                <span class="shrink-0 font-mono text-[15px] text-muted">{{ user.totalCheckinDays }} 天</span>
                 <button
+                  type="button"
                   @click="selectIdentity(user)"
-                  class="shrink-0 rounded-lg bg-violet-100 px-3 py-1.5 text-xs font-medium text-violet-600 transition-colors hover:bg-violet-200 dark:bg-violet-900/40 dark:text-violet-400 dark:hover:bg-violet-900/60"
+                  class="shrink-0 border border-acc2 px-3 py-1.5 text-[15px] font-bold text-acc2 transition-colors hover:bg-acc2 hover:text-acc-ink"
                 >
                   這是我
                 </button>
