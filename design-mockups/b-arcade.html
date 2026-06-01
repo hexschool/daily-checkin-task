@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>方案 B · 街機連續 — 打卡日曆</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ── 配色（單色＝主色＋中性；最多三色＝主/今日/點綴）── */
+  body[data-pal="lime"]{ --bg:#0b0c11;--bg-2:#13151e;--panel:#171a25;--line:#2c3142;--txt:#f3f4fb;--muted:#b6bcd2;
+    --acc:#caf53e;--acc-d:#7e9c1e;--acc-ink:#0b0c11;--acc2:#caf53e;--acc3:#caf53e; }
+  /* 萊姆綠雙色：主萊姆綠 + 今日電光青 */
+  body[data-pal="lime2"]{ --bg:#0b0c11;--bg-2:#13151e;--panel:#171a25;--line:#2c3142;--txt:#f3f4fb;--muted:#b6bcd2;
+    --acc:#caf53e;--acc-d:#7e9c1e;--acc-ink:#0b0c11;--acc2:#38e2ff;--acc3:#caf53e; }
+  body[data-pal="cyan"]{ --bg:#070d16;--bg-2:#0f1a28;--panel:#111d2d;--line:#26384f;--txt:#eef5ff;--muted:#a8b8d4;
+    --acc:#38e2ff;--acc-d:#1c7d98;--acc-ink:#04161f;--acc2:#38e2ff;--acc3:#38e2ff; }
+  body[data-pal="coral"]{ --bg:#120810;--bg-2:#1d0f19;--panel:#22121d;--line:#3f2230;--txt:#ffeef2;--muted:#d8aab8;
+    --acc:#ff5d7a;--acc-d:#a62e44;--acc-ink:#160609;--acc2:#ff5d7a;--acc3:#ff5d7a; }
+  /* 雙色版：主洋紅 + 今日青（兩個特殊色，其餘中性） */
+  body[data-pal="synth"]{ --bg:#0d0820;--bg-2:#160f33;--panel:#1a1340;--line:#312663;--txt:#f4eeff;--muted:#bcb0e2;
+    --acc:#ff52c4;--acc-d:#9c2e7e;--acc-ink:#160622;--acc2:#46ecff;--acc3:#ff52c4; }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"JetBrains Mono",monospace;
+    background:var(--bg);color:var(--txt);
+    line-height:1.55;position:relative;min-height:100vh;overflow-x:hidden;
+    transition:background .3s,color .3s;
+  }
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px) 0 0/100% 3px,
+    radial-gradient(circle at 16% -6%,color-mix(in srgb,var(--acc) 13%,transparent),transparent 42%),
+    radial-gradient(circle at 94% 24%,color-mix(in srgb,var(--acc) 9%,transparent),transparent 46%);}
+  body::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.4;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:42px 42px;-webkit-mask-image:radial-gradient(circle at 50% 26%,#000,transparent 78%);mask-image:radial-gradient(circle at 50% 26%,#000,transparent 78%);}
+  .wrap{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:0 22px 120px}
+
+  /* A/B/C corner switch */
+  .switch{position:fixed;top:16px;right:16px;z-index:40;display:flex;gap:6px}
+  .switch a{font-weight:700;font-size:15px;width:36px;height:36px;display:grid;place-items:center;color:var(--muted);text-decoration:none;border:1px solid var(--line);background:var(--bg-2)}
+  .switch a.on{color:var(--acc-ink);background:var(--acc);border-color:var(--acc)}
+  .switch a:hover{color:var(--acc);border-color:var(--acc)}
+
+  /* palette bar */
+  .palbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:18px 0 4px}
+  .palbar .lab{font-size:15px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .pal{display:flex;align-items:center;gap:9px;padding:8px 13px;border:1px solid var(--line);background:var(--bg-2);color:var(--txt);font-size:15px;font-weight:600;cursor:pointer;transition:.15s}
+  .pal:hover{border-color:var(--txt)}
+  .pal.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+  .pal .dot{width:14px;height:14px;display:block;border:1px solid rgba(255,255,255,.2)}
+
+  /* nav */
+  nav{display:flex;align-items:center;gap:6px;padding:22px 0 26px;flex-wrap:wrap}
+  .logo{font-family:"Silkscreen";font-weight:700;font-size:18px;color:var(--acc);letter-spacing:.02em;margin-right:auto;text-shadow:0 0 14px color-mix(in srgb,var(--acc) 50%,transparent)}
+  nav a.tab{font-size:15px;font-weight:600;text-decoration:none;color:var(--muted);padding:9px 14px;border:1px solid transparent;letter-spacing:.02em;transition:.15s}
+  nav a.tab.cur{color:var(--bg);background:var(--txt)}
+  nav a.tab:hover{color:var(--txt);border-color:var(--line)}
+
+  /* hero */
+  header.hero{border:2px solid var(--txt);background:var(--bg-2);padding:26px;box-shadow:7px 7px 0 var(--acc);position:relative;margin-bottom:32px;opacity:0;animation:pop .5s .05s cubic-bezier(.2,.9,.3,1.2) forwards}
+  .hero .tag{font-size:15px;font-weight:700;color:var(--muted);letter-spacing:.12em}
+  .hero h1{font-family:"Silkscreen";font-size:clamp(30px,6vw,50px);margin:14px 0;line-height:1.08;color:var(--txt)}
+  .hero h1 .blink{color:var(--acc)}
+  .hero .row{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;margin-top:8px}
+  .hero .nm{font-size:15px;color:var(--muted)}
+  .hero .nm b{color:var(--txt);font-weight:700}
+  .period{font-size:15px;font-weight:700;color:var(--acc3);border:1px dashed var(--acc3);padding:7px 13px;letter-spacing:.04em}
+
+  .grid2{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;margin-bottom:32px}
+  @media(max-width:720px){.grid2{grid-template-columns:1fr}}
+
+  .panel{border:1px solid var(--line);background:var(--panel);padding:20px;opacity:0;transform:translateY(14px);animation:rise .6s forwards}
+  .panel.d1{animation-delay:.12s}.panel.d2{animation-delay:.2s}.panel.d3{animation-delay:.28s}
+  @keyframes rise{to{opacity:1;transform:none}}
+  @keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+
+  .ptitle{font-size:15px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:9px;margin-bottom:16px}
+  .ptitle::before{content:"";width:5px;height:15px;background:var(--acc)}
+
+  /* streak */
+  .streak{display:flex;align-items:baseline;gap:12px}
+  .streak .big{font-family:"Silkscreen";font-size:64px;color:var(--acc3);line-height:.9;text-shadow:0 0 24px color-mix(in srgb,var(--acc3) 48%,transparent)}
+  .streak .u{font-size:16px;color:var(--txt)}
+  .streak .u b{color:var(--muted);font-weight:500;display:block;font-size:15px}
+  .xpbar{margin-top:20px}
+  .xpbar .lab{display:flex;justify-content:space-between;font-size:15px;color:var(--muted);margin-bottom:8px;gap:10px;flex-wrap:wrap}
+  .xpbar .lab b{color:var(--acc3);font-weight:700}
+  .track{height:18px;border:1px solid var(--line);background:color-mix(in srgb,var(--bg) 70%,#000);padding:2px}
+  .fill{height:100%;width:62%;background:repeating-linear-gradient(90deg,var(--acc),var(--acc) 7px,var(--acc-d) 7px,var(--acc-d) 9px);box-shadow:0 0 16px color-mix(in srgb,var(--acc) 50%,transparent)}
+
+  /* heatmap (狀態用「填滿 / 外框 / 中性」區分，維持單色) */
+  .hm{display:grid;grid-template-columns:repeat(10,1fr);gap:5px}
+  .px{aspect-ratio:1;border:1px solid var(--line);background:color-mix(in srgb,var(--txt) 5%,var(--bg));transition:.15s}
+  .px.done{background:var(--acc);border-color:var(--acc);box-shadow:0 0 9px color-mix(in srgb,var(--acc) 40%,transparent)}
+  .px.today{background:transparent;border:2px solid var(--acc2);box-shadow:0 0 14px color-mix(in srgb,var(--acc2) 55%,transparent),inset 0 0 0 3px color-mix(in srgb,var(--acc2) 22%,transparent);animation:blink 1.1s steps(2,jump-none) infinite}
+  .px.miss{background:color-mix(in srgb,var(--txt) 9%,var(--bg));border-color:var(--line)}
+  .px:hover{transform:scale(1.2);z-index:2}
+  @keyframes blink{50%{opacity:.45}}
+  .hmleg{display:flex;gap:18px;margin-top:14px;font-size:15px;color:var(--muted);flex-wrap:wrap}
+  .hmleg span{display:flex;align-items:center;gap:7px}
+  .chip{width:14px;height:14px;display:inline-block;border:1px solid var(--line)}
+  .chip.f{background:var(--acc);border-color:var(--acc)}
+  .chip.o{border:2px solid var(--acc2);background:transparent}
+  .chip.x{background:color-mix(in srgb,var(--txt) 9%,var(--bg));border-color:var(--line)}
+
+  /* mode strip */
+  .mode{border:1px solid var(--line);background:var(--bg-2);padding:15px 16px;display:flex;gap:13px;align-items:center;margin-bottom:32px;opacity:0;animation:rise .6s .1s forwards;flex-wrap:wrap}
+  .mode .k{font-size:15px;font-weight:700;letter-spacing:.06em;color:var(--acc-ink);background:var(--acc);padding:6px 11px}
+  .mode p{font-size:15px;color:var(--muted)}
+  .mode p b{color:var(--txt);font-weight:700}
+
+  /* tasks */
+  .tasks .ptitle{margin-bottom:16px}
+  .task{display:flex;align-items:center;gap:14px;padding:16px;border:1px solid var(--line);background:var(--bg-2);margin-bottom:10px;transition:.15s}
+  .task:hover{border-color:var(--acc);transform:translateX(4px)}
+  .task .lvl{font-family:"JetBrains Mono";font-weight:800;font-size:15px;color:var(--muted);width:62px;flex-shrink:0;letter-spacing:.02em}
+  .task.cur .lvl{color:var(--acc2)}
+  .task .info{flex:1;min-width:0}
+  .task .info .t{font-weight:700;font-size:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .task .info .s{font-size:15px;color:var(--muted);margin-top:4px}
+  .bdg{font-size:15px;font-weight:700;letter-spacing:.04em;padding:2px 10px}
+  .bdg.done{color:var(--acc);border:1px solid var(--acc)}
+  .bdg.today{color:var(--bg);background:var(--acc2)}
+  .btn{font-weight:700;font-size:15px;text-decoration:none;padding:11px 16px;white-space:nowrap;transition:.1s;display:inline-block}
+  .btn.go{color:var(--acc-ink);background:var(--acc);box-shadow:3px 3px 0 var(--acc-d)}
+  .btn.go:hover{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--acc-d)}
+  .btn.alt{color:var(--txt);border:1px solid var(--line)}
+  .btn.alt:hover{border-color:var(--acc);color:var(--acc)}
+
+  .howto{margin-top:16px;border:1px dashed var(--acc);padding:15px 16px;display:flex;gap:12px;align-items:center;background:color-mix(in srgb,var(--acc) 7%,transparent)}
+  .howto .i{font-size:20px}
+  .howto p{font-size:15px;color:var(--muted)}
+  .howto p b{color:var(--acc);font-weight:700}
+  .howto p span{color:var(--txt);font-weight:600}
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:32px}
+  .stat{border:1px solid var(--line);background:var(--panel);padding:20px 14px;opacity:0;transform:translateY(14px);animation:rise .6s forwards}
+  .stat:nth-child(1){animation-delay:.1s}.stat:nth-child(2){animation-delay:.18s}.stat:nth-child(3){animation-delay:.26s}.stat:nth-child(4){animation-delay:.34s}
+  .stat .n{font-family:"Silkscreen";font-size:30px;line-height:1;color:var(--acc)}
+  .stat .l{font-size:15px;font-weight:600;letter-spacing:.02em;color:var(--muted);margin-top:13px}
+  @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}.hm{grid-template-columns:repeat(6,1fr)}}
+
+  footer{margin-top:48px;border-top:1px solid var(--line);padding-top:16px;font-size:15px;font-weight:600;letter-spacing:.04em;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+</style>
+</head>
+<body data-pal="lime2">
+  <div class="switch">
+    <a href="a-almanac.html">A</a>
+    <a href="b-arcade.html" class="on">B</a>
+    <a href="c-grid.html">C</a>
+  </div>
+
+  <div class="wrap">
+    <div class="palbar">
+      <span class="lab">配色</span>
+      <button class="pal" data-p="lime"><span class="dot" style="background:#caf53e"></span>萊姆綠</button>
+      <button class="pal on" data-p="lime2"><span class="dot" style="background:#caf53e"></span><span class="dot" style="background:#38e2ff"></span>萊姆綠×電光青</button>
+      <button class="pal" data-p="cyan"><span class="dot" style="background:#38e2ff"></span>電光青</button>
+      <button class="pal" data-p="coral"><span class="dot" style="background:#ff5d7a"></span>珊瑚紅</button>
+      <button class="pal" data-p="synth"><span class="dot" style="background:#ff52c4"></span><span class="dot" style="background:#46ecff"></span>合成波 · 雙色</button>
+    </div>
+
+    <nav>
+      <div class="logo">DAILY·QUEST</div>
+      <a class="tab cur" href="#">打卡日曆</a>
+      <a class="tab" href="#">我的旅程</a>
+      <a class="tab" href="#">我的追蹤</a>
+      <a class="tab" href="#">排行榜</a>
+    </nav>
+
+    <header class="hero">
+      <div class="tag">▶ SEASON 12 — SPRING SPRINT</div>
+      <h1>打卡<span class="blink">日曆</span></h1>
+      <div class="row">
+        <div class="nm">排程 — <b>2026 春季前端衝刺營</b></div>
+        <div class="period">03/01 ▸ 03/30</div>
+      </div>
+    </header>
+
+    <div class="mode">
+      <span class="k">標準模式</span>
+      <p><b>僅限貼文當天打卡</b>　錯過當日即中斷連續紀錄</p>
+    </div>
+
+    <div class="grid2">
+      <div class="panel d1">
+        <div class="ptitle">連續紀錄 · CURRENT STREAK</div>
+        <div class="streak"><span class="big">07</span><span class="u">天<b>連續打卡中</b></span></div>
+        <div class="xpbar">
+          <div class="lab"><span>LV.4 達人 → LV.5 大師</span><b>312 / 500 XP</b></div>
+          <div class="track"><div class="fill"></div></div>
+        </div>
+      </div>
+
+      <div class="panel d2">
+        <div class="ptitle">修煉軌跡 · 30 DAYS</div>
+        <div class="hm" id="hm"></div>
+        <div class="hmleg">
+          <span><i class="chip f"></i> 已完成</span>
+          <span><i class="chip o"></i> 今日</span>
+          <span><i class="chip x"></i> 未完成</span>
+          <span><i class="chip"></i> 未發佈</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel tasks d3">
+      <div class="ptitle">每日任務 · QUESTS</div>
+      <div class="task cur">
+        <span class="lvl">DAY12</span>
+        <div class="info"><div class="t">CSS Grid 版面實作 <span class="bdg today">今日</span></div><div class="s">#day12-checkin · 尚未留言</div></div>
+        <a class="btn go" href="#">▶ 前往打卡</a>
+      </div>
+      <div class="task">
+        <span class="lvl">DAY11</span>
+        <div class="info"><div class="t">Flexbox 對齊練習 <span class="bdg done">已完成</span></div><div class="s">#day11-checkin · 已留言</div></div>
+        <a class="btn alt" href="#">前往 ↗</a>
+      </div>
+      <div class="task">
+        <span class="lvl">DAY10</span>
+        <div class="info"><div class="t">響應式斷點設計</div><div class="s">#day10-checkin · 未留言</div></div>
+      </div>
+      <div class="task">
+        <span class="lvl">DAY09</span>
+        <div class="info"><div class="t">Vue 元件拆分 <span class="bdg done">已完成</span></div><div class="s">#day09-checkin · 已留言</div></div>
+      </div>
+      <div class="task">
+        <span class="lvl">DAY08</span>
+        <div class="info"><div class="t">Pinia 狀態管理 <span class="bdg done">已完成</span></div><div class="s">#day08-checkin · 已留言</div></div>
+      </div>
+
+      <div class="howto">
+        <span class="i">💡</span>
+        <p><b>HOW TO PLAY</b>　點任務 → 進入 Discord 頻道 → 留言即自動打卡 <span>（資料每小時更新一次）</span></p>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="n">12</div><div class="l">已發佈天數</div></div>
+      <div class="stat"><div class="n">30</div><div class="l">預計天數</div></div>
+      <div class="stat"><div class="n">312</div><div class="l">總打卡次數</div></div>
+      <div class="stat"><div class="n">48</div><div class="l">參與人數</div></div>
+    </div>
+
+    <footer><span>HEXSCHOOL ARCADE · DAILY CHECK-IN</span><span>方案 B — 街機連續</span></footer>
+  </div>
+
+<script>
+  const done=new Set([1,2,3,4,5,6,7,8,9,11]),today=12,pub=12;
+  const hm=document.getElementById('hm');
+  for(let i=1;i<=30;i++){
+    const p=document.createElement('div');p.className='px';
+    if(i===today)p.classList.add('today');
+    else if(done.has(i))p.classList.add('done');
+    else if(i<pub)p.classList.add('miss');
+    hm.appendChild(p);
+  }
+  document.querySelectorAll('.pal').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.body.dataset.pal=b.dataset.p;
+      document.querySelectorAll('.pal').forEach(x=>x.classList.toggle('on',x===b));
+    });
+  });
+</script>
+</body>
+</html>

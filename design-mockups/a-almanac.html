@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>方案 A · 修煉手帳 — 打卡日曆</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Newsreader:ital,opsz,wght@0,6..72,200..700;1,6..72,200..600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f4eee2;
+    --paper-2:#efe7d8;
+    --ink:#211d18;
+    --ink-soft:#5c5247;
+    --faint:#a99c87;
+    --rule:#d9cdb8;
+    --seal:#b8392a;
+    --seal-soft:#e9d3cb;
+    --gold:#9a7b3f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Newsreader",serif;
+    color:var(--ink);
+    background:var(--paper);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    position:relative;
+    min-height:100vh;
+  }
+  /* paper grain */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+    mix-blend-mode:multiply;
+  }
+  .wrap{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:0 28px 120px}
+
+  /* ── switcher ── */
+  .switch{position:fixed;top:18px;right:18px;z-index:30;display:flex;gap:6px;font-family:"IBM Plex Mono",monospace;font-size:11px}
+  .switch a{padding:6px 10px;border:1px solid var(--ink);color:var(--ink);text-decoration:none;background:var(--paper);letter-spacing:.04em;transition:.2s}
+  .switch a.on{background:var(--ink);color:var(--paper)}
+  .switch a:hover{background:var(--seal);color:#fff;border-color:var(--seal)}
+
+  /* ── masthead ── */
+  header.mast{border-bottom:2px solid var(--ink);padding:54px 0 14px;margin-bottom:8px}
+  .kicker{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--seal);display:flex;justify-content:space-between;align-items:baseline}
+  .kicker .ed{color:var(--faint)}
+  .mast h1{font-family:"Fraunces",serif;font-weight:600;font-size:clamp(46px,9vw,86px);line-height:.9;letter-spacing:-.02em;margin:14px 0 4px;font-optical-sizing:auto}
+  .mast h1 em{font-style:italic;font-weight:300;color:var(--seal)}
+  .sub{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .sub .name{font-family:"Newsreader",serif;font-style:italic;font-size:20px;color:var(--ink-soft)}
+  .sub .period{font-family:"IBM Plex Mono",monospace;font-size:13px;letter-spacing:.08em;color:var(--ink);border:1px solid var(--rule);padding:4px 10px;background:var(--paper-2)}
+
+  /* ── top nav (folio) ── */
+  nav.folio{display:flex;gap:26px;font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:12px 0;border-bottom:1px solid var(--rule);margin-bottom:38px}
+  nav.folio a{color:var(--faint);text-decoration:none;position:relative;padding-bottom:3px;transition:.2s}
+  nav.folio a.cur{color:var(--ink)}
+  nav.folio a.cur::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--seal)}
+  nav.folio a:hover{color:var(--ink)}
+
+  section{margin-bottom:46px;opacity:0;transform:translateY(16px);animation:rise .7s cubic-bezier(.2,.7,.2,1) forwards}
+  section:nth-of-type(1){animation-delay:.05s}
+  section:nth-of-type(2){animation-delay:.14s}
+  section:nth-of-type(3){animation-delay:.23s}
+  section:nth-of-type(4){animation-delay:.32s}
+  @keyframes rise{to{opacity:1;transform:none}}
+
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:18px}
+  .sec-head .no{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--seal);letter-spacing:.1em}
+  .sec-head h2{font-family:"Fraunces",serif;font-weight:500;font-size:24px;letter-spacing:-.01em}
+  .sec-head .ln{flex:1;height:1px;background:var(--rule);align-self:center}
+
+  /* mode note */
+  .mode{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;background:var(--paper-2);border-left:3px solid var(--seal)}
+  .mode .ic{font-family:"Fraunces",serif;font-size:26px;font-style:italic;color:var(--seal);line-height:1}
+  .mode b{font-weight:600;font-size:15px}
+  .mode p{font-size:14px;color:var(--ink-soft);margin-top:2px}
+
+  /* heatmap as journal grid */
+  .cal{display:grid;grid-template-columns:repeat(10,1fr);gap:7px}
+  .cell{aspect-ratio:1;border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;position:relative;background:var(--paper);font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--faint);transition:.18s}
+  .cell .d{position:absolute;top:3px;left:4px;font-size:9px;color:var(--faint)}
+  .cell.done{background:var(--seal);border-color:var(--seal)}
+  .cell.done .stamp{font-family:"Fraunces",serif;color:#f4eee2;font-size:18px;line-height:1;transform:rotate(-8deg)}
+  .cell.done .d{color:#e9c9c2}
+  .cell.today{border:2px solid var(--ink);background:#fff}
+  .cell.today .ring{position:absolute;inset:-5px;border:1px dashed var(--seal);animation:spin 22s linear infinite}
+  .cell.miss{background:repeating-linear-gradient(45deg,var(--paper),var(--paper) 4px,var(--paper-2) 4px,var(--paper-2) 8px)}
+  .cell.future{border-style:dashed;opacity:.55}
+  .cell:hover{transform:translateY(-2px)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .legend{display:flex;gap:18px;margin-top:14px;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-soft)}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .sw{width:12px;height:12px;border:1px solid var(--rule);display:inline-block}
+  .sw.d{background:var(--seal);border-color:var(--seal)}
+  .sw.t{border:2px solid var(--ink)}
+
+  /* daily tasks — editorial list */
+  .task{display:flex;align-items:center;gap:18px;padding:18px 4px;border-bottom:1px solid var(--rule);transition:.2s}
+  .task:hover{background:var(--paper-2);padding-left:12px;padding-right:12px}
+  .task .idx{font-family:"Fraunces",serif;font-size:34px;font-weight:300;color:var(--faint);width:54px;text-align:right;line-height:1;font-feature-settings:"tnum"}
+  .task .body{flex:1;min-width:0}
+  .task .ttl{font-family:"Fraunces",serif;font-weight:600;font-size:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .task .ttl small{font-family:"Newsreader",serif;font-style:italic;font-weight:400;font-size:14px;color:var(--ink-soft)}
+  .badge{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border:1px solid currentColor}
+  .badge.done{color:var(--seal)}
+  .badge.today{color:var(--ink);background:var(--ink);color:#f4eee2;border-color:var(--ink)}
+  .task .go{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.06em;text-decoration:none;white-space:nowrap;padding:9px 16px;transition:.2s;display:inline-flex;gap:8px;align-items:center}
+  .go.prim{background:var(--seal);color:#fff}
+  .go.prim:hover{background:var(--ink)}
+  .go.sec{color:var(--ink);border-bottom:1px solid var(--ink)}
+  .go.sec:hover{color:var(--seal);border-color:var(--seal)}
+
+  /* how-to */
+  .howto{margin-top:24px;display:flex;gap:14px;align-items:flex-start;padding:16px 18px;border:1px dashed var(--gold);background:rgba(154,123,63,.06)}
+  .howto .ic{font-family:"Fraunces",serif;font-style:italic;font-size:24px;color:var(--gold)}
+  .howto b{font-weight:600;font-size:14px}
+  .howto p{font-size:13.5px;color:var(--ink-soft);margin-top:2px}
+  .howto p span{color:var(--ink);font-weight:600}
+
+  /* stats — figures */
+  .figs{display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--ink)}
+  .fig{padding:22px 4px 8px;border-right:1px solid var(--rule)}
+  .fig:last-child{border-right:0}
+  .fig .n{font-family:"Fraunces",serif;font-weight:400;font-size:clamp(34px,6vw,52px);line-height:.9;letter-spacing:-.02em;font-feature-settings:"tnum"}
+  .fig .n em{font-style:italic;color:var(--seal);font-size:.55em}
+  .fig .l{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-top:8px}
+
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--rule);font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;color:var(--faint);display:flex;justify-content:space-between}
+  @media(max-width:640px){
+    .cal{grid-template-columns:repeat(6,1fr)}
+    .figs{grid-template-columns:repeat(2,1fr)}
+    .fig:nth-child(2){border-right:0}
+    .fig{border-bottom:1px solid var(--rule)}
+    .task .idx{font-size:26px;width:40px}
+  }
+</style>
+</head>
+<body>
+  <div class="switch">
+    <a href="a-almanac.html" class="on">A</a>
+    <a href="b-arcade.html">B</a>
+    <a href="c-grid.html">C</a>
+  </div>
+
+  <div class="wrap">
+    <header class="mast">
+      <div class="kicker"><span>每日打卡 · 修煉手帳</span><span class="ed">第 12 期 — 二〇二六</span></div>
+      <h1>打卡<em>日曆</em></h1>
+      <div class="sub">
+        <span class="name">2026 春季前端衝刺營</span>
+        <span class="period">會期 03/01 — 03/30</span>
+      </div>
+    </header>
+
+    <nav class="folio">
+      <a href="#" class="cur">打卡日曆</a>
+      <a href="#">我的旅程</a>
+      <a href="#">我的追蹤</a>
+      <a href="#">排行榜</a>
+    </nav>
+
+    <section>
+      <div class="mode">
+        <span class="ic">✦</span>
+        <div>
+          <b>標準模式</b>
+          <p>僅限貼文當天打卡。錯過當日將計為未完成，連續紀錄會中斷。</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head"><span class="no">I.</span><h2>修煉軌跡</h2><span class="ln"></span></div>
+      <div class="cal" id="cal"></div>
+      <div class="legend">
+        <span><i class="sw d"></i> 已完成</span>
+        <span><i class="sw t"></i> 今日</span>
+        <span><i class="sw"></i> 未發佈</span>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head"><span class="no">II.</span><h2>每日任務</h2><span class="ln"></span></div>
+
+      <div class="task">
+        <span class="idx">12</span>
+        <div class="body"><div class="ttl">Day 12 <small>CSS Grid 版面實作</small> <span class="badge today">今日</span></div></div>
+        <a class="go prim" href="#">前往打卡 →</a>
+      </div>
+      <div class="task">
+        <span class="idx">11</span>
+        <div class="body"><div class="ttl">Day 11 <small>Flexbox 對齊練習</small> <span class="badge done">已完成</span></div></div>
+        <a class="go sec" href="#">前往</a>
+      </div>
+      <div class="task">
+        <span class="idx">10</span>
+        <div class="body"><div class="ttl">Day 10 <small>響應式斷點設計</small></div></div>
+      </div>
+      <div class="task">
+        <span class="idx">09</span>
+        <div class="body"><div class="ttl">Day 09 <small>Vue 元件拆分</small> <span class="badge done">已完成</span></div></div>
+      </div>
+      <div class="task">
+        <span class="idx">08</span>
+        <div class="body"><div class="ttl">Day 08 <small>Pinia 狀態管理</small> <span class="badge done">已完成</span></div></div>
+      </div>
+
+      <div class="howto">
+        <span class="ic">☞</span>
+        <div>
+          <b>如何參與</b>
+          <p>點任務 → 進入 Discord 頻道 → 留言即自動打卡 <span>（資料每小時更新一次）</span></p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head"><span class="no">III.</span><h2>會期統計</h2><span class="ln"></span></div>
+      <div class="figs">
+        <div class="fig"><div class="n">12<em>/30</em></div><div class="l">已發佈天數</div></div>
+        <div class="fig"><div class="n">30</div><div class="l">預計天數</div></div>
+        <div class="fig"><div class="n">312</div><div class="l">總打卡次數</div></div>
+        <div class="fig"><div class="n">48</div><div class="l">參與人數</div></div>
+      </div>
+    </section>
+
+    <footer>
+      <span>HEXSCHOOL · DAILY CHECK-IN</span>
+      <span>方案 A — 修煉手帳</span>
+    </footer>
+  </div>
+
+<script>
+  // build calendar: 30 days, published 1..12, completed set, today=12, miss=10
+  const done = new Set([1,2,3,4,5,6,7,8,9,11]);
+  const today = 12, published = 12;
+  const cal = document.getElementById('cal');
+  for(let i=1;i<=30;i++){
+    const c = document.createElement('div');
+    c.className='cell';
+    let inner = `<span class="d">${i}</span>`;
+    if(i===today){ c.classList.add('today'); inner += `<span class="ring"></span>`; }
+    else if(done.has(i)){ c.classList.add('done'); inner += `<span class="stamp">✓</span>`; }
+    else if(i<published){ c.classList.add('miss'); }
+    else { c.classList.add('future'); }
+    c.innerHTML = inner;
+    cal.appendChild(c);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>打卡日曆 — 設計方案比較</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Archivo",sans-serif;background:#0f1115;color:#e9eaf0;line-height:1.5;padding:40px 24px 80px}
+  .head{max-width:1280px;margin:0 auto 36px}
+  .head .k{font-family:"Spline Sans Mono";font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#7b8cff}
+  .head h1{font-weight:900;font-size:clamp(30px,5vw,48px);letter-spacing:-.02em;margin:10px 0}
+  .head p{color:#9aa0b0;max-width:620px}
+  .grid{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  @media(max-width:980px){.grid{grid-template-columns:1fr}}
+  .card{border:1px solid #262a36;border-radius:14px;overflow:hidden;background:#161922;transition:.2s}
+  .card:hover{border-color:#7b8cff;transform:translateY(-3px)}
+  .frame{position:relative;height:300px;overflow:hidden;border-bottom:1px solid #262a36;background:#fff}
+  .frame iframe{width:1100px;height:1375px;border:0;transform:scale(.36);transform-origin:top left}
+  .frame a.cover{position:absolute;inset:0;z-index:2}
+  .meta{padding:18px 20px}
+  .meta .tag{font-family:"Spline Sans Mono";font-size:11px;color:#7b8cff;letter-spacing:.1em}
+  .meta h2{font-size:20px;font-weight:800;margin:6px 0 8px}
+  .meta ul{list-style:none;display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+  .meta li{font-family:"Spline Sans Mono";font-size:11px;color:#aab0c0;border:1px solid #2c3140;border-radius:999px;padding:3px 9px}
+  .meta .desc{font-size:13.5px;color:#9aa0b0;margin-bottom:16px}
+  .meta a.open{display:inline-block;font-family:"Spline Sans Mono";font-size:12px;text-decoration:none;color:#0f1115;background:#cdd4ff;padding:9px 16px;border-radius:8px;transition:.15s}
+  .meta a.open:hover{background:#fff}
+  .foot{max-width:1280px;margin:40px auto 0;font-family:"Spline Sans Mono";font-size:12px;color:#6b7080}
+</style>
+</head>
+<body>
+  <div class="head">
+    <div class="k">Design Exploration · 打卡日曆首頁</div>
+    <h1>三種設計方向</h1>
+    <p>同一份頁面結構（會期、打卡模式、修煉軌跡熱力圖、每日任務、會期統計）的三種迥異視覺語言。點任一張卡片開啟完整原型，原型右上角可互相切換 A / B / C。</p>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="frame"><a class="cover" href="a-almanac.html"></a><iframe src="a-almanac.html" scrolling="no"></iframe></div>
+      <div class="meta">
+        <div class="tag">方案 A</div>
+        <h2>修煉手帳</h2>
+        <ul><li>編輯/雜誌感</li><li>暖色紙質</li><li>Fraunces 襯線</li><li>朱印戳記</li></ul>
+        <p class="desc">像一本修煉手帳：暖色紙紋、襯線大標、朱紅印章標記完成日，大量留白與編號式排版。沉穩、有溫度、耐看。</p>
+        <a class="open" href="a-almanac.html">開啟方案 A →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="frame"><a class="cover" href="b-arcade.html"></a><iframe src="b-arcade.html" scrolling="no"></iframe></div>
+      <div class="meta">
+        <div class="tag">方案 B</div>
+        <h2>街機連續</h2>
+        <ul><li>深色科技</li><li>像素字體</li><li>霓虹強調</li><li>遊戲化</li></ul>
+        <p class="desc">把打卡變成電玩：暗底 + 掃描線、像素標題、連續紀錄與 XP 進度條、發光熱力格與硬邊「PRESS」按鈕。年輕、有衝勁、抓眼球。</p>
+        <a class="open" href="b-arcade.html">開啟方案 B →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="frame"><a class="cover" href="c-grid.html"></a><iframe src="c-grid.html" scrolling="no"></iframe></div>
+      <div class="meta">
+        <div class="tag">方案 C</div>
+        <h2>靜謐網格</h2>
+        <ul><li>瑞士式</li><li>淺色精準</li><li>Archivo 無襯線</li><li>資料儀表板</li></ul>
+        <p class="desc">瑞士國際風的資料儀表板：細網格線、超大表格化數字、單一電光藍強調、嚴謹對齊。專業、清晰、資訊密度高。</p>
+        <a class="open" href="c-grid.html">開啟方案 C →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">提示：每個原型皆為靜態示意（假資料），右上角 A/B/C 可即時切換比較。</div>
+</body>
+</html>
