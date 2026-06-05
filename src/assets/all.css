@@ -22,9 +22,30 @@
   --color-acc2: #38e2ff;     /* 今日色 · 電光青 */
 }
 
+/* ────────────────────────────────────────────
+   亮色版 token（.light 套在 <html> 時覆寫上方暗色值）
+   主色改深綠、今日色改深青，確保白底也有足夠對比
+──────────────────────────────────────────── */
+:root.light {
+  --color-base: #edefe4;     /* 頁面底色 */
+  --color-surface: #ffffff;  /* 區塊／卡片底 */
+  --color-panel: #ffffff;    /* 面板底 */
+  --color-edge: #d2d6c4;     /* 邊框／格線 */
+  --color-ink: #15171d;      /* 主要文字 */
+  --color-muted: #565c6e;    /* 次要文字 */
+
+  --color-acc: #5a7d00;      /* 主色 · 深萊姆綠（白底可讀） */
+  --color-acc-strong: #3f5800;
+  --color-acc-ink: #ffffff;  /* 主色底上的文字 */
+  --color-acc2: #0c7d9d;     /* 今日色 · 深電光青 */
+}
+
 @layer base {
   html {
     color-scheme: dark;
+  }
+  html.light {
+    color-scheme: light;
   }
   body {
     background-color: var(--color-base);
@@ -42,7 +63,8 @@
     z-index: 0;
     pointer-events: none;
     background:
-      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px) 0 0 / 100% 3px,
+      linear-gradient(color-mix(in srgb, var(--color-ink) 3%, transparent) 1px, transparent 1px) 0 0 /
+        100% 3px,
       radial-gradient(circle at 16% -6%, color-mix(in srgb, var(--color-acc) 12%, transparent), transparent 42%),
       radial-gradient(circle at 94% 18%, color-mix(in srgb, var(--color-acc2) 10%, transparent), transparent 46%);
   }

@@ -62,10 +62,12 @@ Vue 3（`<script setup lang="ts">`）、TypeScript 5.9、Vite 7、Pinia 3、Vue 
 - `stores/pinned.ts`：localStorage `pinned-users`，每個排程最多釘選 5 位好友（`MAX_PINNED`）；釘選資料以並行請求補齊 `UserDetail` 再轉成 `UserCheckinItem`。
 - 所有本機狀態都**以 scheduleId 分桶**，切換排程互不干擾。
 
-### 5. 主題系統
+### 5. 主題系統（亮 / 暗色）
 
-- `stores/theme.ts`：localStorage `theme`，`watch` 切換 `<html>` 的 `.dark` class。`App.vue` 在掛載時呼叫 `useThemeStore()` 以套用初始主題。
-- Tailwind 4 dark 變體在 `src/assets/all.css` 以 `@custom-variant dark (&:where(.dark, .dark *))` 定義。撰寫樣式時用 `dark:` 前綴。
+- **以暗色為預設**：`src/assets/all.css` 的 `@theme` 定義整組設計 token（`--color-base`/`-surface`/`-panel`/`-edge`/`-ink`/`-muted`/`-acc`/`-acc-strong`/`-acc-ink`/`-acc2`），其值即暗色版；亮色版在同檔以 `:root.light { ... }` 覆寫同一組變數。換主題＝在 `<html>` 加 / 去 `.light` class，**所有走 token utility（`bg-base`/`text-ink`…）或 `var(--color-*)` 的樣式會自動跟著變，元件不需改**。
+- 沒有 Tailwind `dark:` 變體，也沒有 `@custom-variant`。新增顏色一律使用 token（`bg-surface`/`border-edge`/`text-acc`…），勿寫死色碼，才能同時支援兩種主題。
+- `stores/theme.ts`（Pinia）：localStorage key `theme`，初值為「上次選擇 ⟶ 否則跟隨系統 `prefers-color-scheme`」；`watch` 持久化並切換 `.light` class、同步 `<meta name="theme-color">`。`App.vue` 掛載時呼叫 `useThemeStore()` 維持反應式；`TopNavBar` 有切換鈕。
+- `index.html` 於 `<head>` 內嵌一段 inline script，在 Vue 掛載前先套用主題 class，避免首屏閃爍（FOUC）。
 
 ### Store 與資料流
 
@@ -98,7 +100,7 @@ src/
 │   ├── stats/ user/ day/   # 各頁面區塊元件
 │   ├── gamification/       # AchievementBadge/List、LevelProgress、StreakBadge、ContributionHeatmap
 │   └── charts/             # DailyCheckinChart（chart.js）
-└── assets/all.css          # Tailwind + Bootstrap Icons + dark 變體
+└── assets/all.css          # Tailwind + Bootstrap Icons + 亮/暗色 token（:root.light 覆寫）
 ```
 
 頁面慣例：view 用 `<AppShell>` 包裹，依 `isLoading` / `error` / 有資料 三態渲染（`LoadingSpinner` / `ErrorMessage` + retry / 內容）。

@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
+import { useThemeStore } from '@/stores/theme'
 
 const route = useRoute()
+const themeStore = useThemeStore()
 const mobileMenuOpen = ref(false)
+
+// 亮暗色切換按鈕的圖示與無障礙標籤（暗色時顯示太陽＝可切到亮色）
+const themeIcon = computed(() =>
+  themeStore.theme === 'dark' ? 'bi-sun-fill' : 'bi-moon-stars-fill',
+)
+const themeLabel = computed(() =>
+  themeStore.theme === 'dark' ? '切換為亮色模式' : '切換為暗色模式',
+)
 
 const scheduleId = computed(() => route.params.scheduleId as string)
 
@@ -58,32 +68,45 @@ function closeMobileMenu() {
         >每日打卡</span>
       </div>
 
-      <!-- Desktop Nav -->
-      <nav class="hidden items-center gap-1.5 sm:flex">
-        <RouterLink
-          v-for="item in navItems"
-          :key="item.name"
-          :to="item.to"
-          class="flex items-center gap-2 border px-3.5 py-2 text-[15px] font-semibold transition-colors"
-          :class="
-            isActive(item.routeNames)
-              ? 'border-ink bg-ink text-base'
-              : 'border-transparent text-muted hover:border-edge hover:text-ink'
-          "
-        >
-          <i :class="['bi', item.icon]"></i>
-          {{ item.name }}
-        </RouterLink>
-      </nav>
+      <!-- 右側：導覽 + 亮暗色切換 + 手機選單鈕 -->
+      <div class="flex items-center gap-2">
+        <!-- Desktop Nav -->
+        <nav class="hidden items-center gap-1.5 sm:flex">
+          <RouterLink
+            v-for="item in navItems"
+            :key="item.name"
+            :to="item.to"
+            class="flex items-center gap-2 border px-3.5 py-2 text-[15px] font-semibold transition-colors"
+            :class="
+              isActive(item.routeNames)
+                ? 'border-ink bg-ink text-base'
+                : 'border-transparent text-muted hover:border-edge hover:text-ink'
+            "
+          >
+            <i :class="['bi', item.icon]"></i>
+            {{ item.name }}
+          </RouterLink>
+        </nav>
 
-      <!-- Mobile menu button -->
-      <button
-        class="flex h-9 w-9 items-center justify-center border border-edge text-muted transition-colors hover:border-acc hover:text-acc sm:hidden"
-        @click="mobileMenuOpen = !mobileMenuOpen"
-        aria-label="切換選單"
-      >
-        <i :class="['bi text-xl', mobileMenuOpen ? 'bi-x-lg' : 'bi-list']"></i>
-      </button>
+        <!-- 亮暗色切換 -->
+        <button
+          class="flex h-9 w-9 items-center justify-center border border-edge text-muted transition-colors hover:border-acc hover:text-acc"
+          @click="themeStore.toggle()"
+          :aria-label="themeLabel"
+          :title="themeLabel"
+        >
+          <i :class="['bi text-lg', themeIcon]"></i>
+        </button>
+
+        <!-- Mobile menu button -->
+        <button
+          class="flex h-9 w-9 items-center justify-center border border-edge text-muted transition-colors hover:border-acc hover:text-acc sm:hidden"
+          @click="mobileMenuOpen = !mobileMenuOpen"
+          aria-label="切換選單"
+        >
+          <i :class="['bi text-xl', mobileMenuOpen ? 'bi-x-lg' : 'bi-list']"></i>
+        </button>
+      </div>
     </div>
 
     <!-- Mobile dropdown menu -->
