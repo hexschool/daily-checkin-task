@@ -16,16 +16,7 @@ const identityStore = useIdentityStore()
 const scheduleId = computed(() => route.params.scheduleId as string)
 const myUserId = computed(() => identityStore.getMyUserId(scheduleId.value))
 
-// 打卡模式
-const checkinModeLabel = computed(() => {
-  switch (checkinStore.scheduleStats?.checkinMode) {
-    case 'standard': return '標準模式'
-    case 'extended': return '延時模式'
-    case 'all_period': return '全期間模式'
-    default: return '標準模式'
-  }
-})
-
+// 打卡規則說明（標題文字固定為「打卡規則」，僅描述隨模式變動）
 const checkinModeDescription = computed(() => {
   switch (checkinStore.scheduleStats?.checkinMode) {
     case 'standard': return '僅限貼文當天打卡，錯過當日即中斷連續紀錄'
@@ -176,11 +167,25 @@ onMounted(async () => {
         </div>
       </header>
 
-      <!-- 打卡模式 -->
-      <div class="flex flex-wrap items-center gap-3 border border-edge bg-surface px-4 py-3.5">
-        <span class="bg-acc px-2.5 py-1.5 text-[15px] font-bold text-acc-ink">{{ checkinModeLabel }}</span>
-        <p class="text-[15px] text-muted">{{ checkinModeDescription }}</p>
-      </div>
+      <!-- 統計 -->
+      <section class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="arcade-panel p-5 text-center">
+          <div class="font-pixel text-2xl text-acc">{{ checkinStore.scheduleStats.dailyTasks }}</div>
+          <div class="mt-3 text-[15px] font-semibold text-muted">已發佈天數</div>
+        </div>
+        <div class="arcade-panel p-5 text-center">
+          <div class="font-pixel text-2xl text-acc">{{ checkinStore.scheduleStats.expectedTasks }}</div>
+          <div class="mt-3 text-[15px] font-semibold text-muted">預計天數</div>
+        </div>
+        <div class="arcade-panel p-5 text-center">
+          <div class="font-pixel text-2xl text-acc">{{ checkinStore.scheduleStats.totalCheckins }}</div>
+          <div class="mt-3 text-[15px] font-semibold text-muted">總打卡次數</div>
+        </div>
+        <div class="arcade-panel p-5 text-center">
+          <div class="font-pixel text-2xl text-acc">{{ checkinStore.scheduleStats.uniqueUsers }}</div>
+          <div class="mt-3 text-[15px] font-semibold text-muted">參與人數</div>
+        </div>
+      </section>
 
       <!-- 熱力圖 -->
       <section class="arcade-panel p-5">
@@ -243,6 +248,24 @@ onMounted(async () => {
       <!-- 每日任務 -->
       <section v-if="dailyTasks.length" class="arcade-panel p-5">
         <div class="arcade-eyebrow mb-4">每日任務 · QUESTS</div>
+
+        <!-- 如何參與 -->
+        <div class="mb-4 flex items-center gap-3 border border-dashed border-acc px-4 py-3.5 [background:color-mix(in_srgb,var(--color-acc)_7%,transparent)]">
+          <span class="text-xl">💡</span>
+          <p class="text-[15px] text-muted">
+            <b class="font-bold text-acc">如何參與</b>　點任務 → 進入 Discord 頻道 → 留言即自動打卡
+          </p>
+        </div>
+
+        <!-- 打卡規則 -->
+        <div class="mb-4 flex flex-wrap items-center gap-3 border border-edge bg-surface px-4 py-3.5">
+          <span class="border border-acc px-2.5 py-1.5 text-[15px] font-bold text-acc">打卡規則</span>
+          <p class="text-[15px] text-muted">
+            {{ checkinModeDescription }}
+            <span class="font-semibold text-ink">（資料每小時更新一次）</span>
+          </p>
+        </div>
+
         <div class="space-y-2.5">
           <div
             v-for="task in dailyTasks"
@@ -275,35 +298,6 @@ onMounted(async () => {
               class="arcade-btn-alt shrink-0"
             >前往 ↗</a>
           </div>
-        </div>
-
-        <!-- 如何參與 -->
-        <div class="mt-4 flex items-center gap-3 border border-dashed border-acc px-4 py-3.5 [background:color-mix(in_srgb,var(--color-acc)_7%,transparent)]">
-          <span class="text-xl">💡</span>
-          <p class="text-[15px] text-muted">
-            <b class="font-bold text-acc">如何參與</b>　點任務 → 進入 Discord 頻道 → 留言即自動打卡
-            <span class="font-semibold text-ink">（資料每小時更新一次）</span>
-          </p>
-        </div>
-      </section>
-
-      <!-- 統計 -->
-      <section class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div class="arcade-panel p-5 text-center">
-          <div class="font-pixel text-2xl text-acc">{{ checkinStore.scheduleStats.dailyTasks }}</div>
-          <div class="mt-3 text-[15px] font-semibold text-muted">已發佈天數</div>
-        </div>
-        <div class="arcade-panel p-5 text-center">
-          <div class="font-pixel text-2xl text-acc">{{ checkinStore.scheduleStats.expectedTasks }}</div>
-          <div class="mt-3 text-[15px] font-semibold text-muted">預計天數</div>
-        </div>
-        <div class="arcade-panel p-5 text-center">
-          <div class="font-pixel text-2xl text-acc">{{ checkinStore.scheduleStats.totalCheckins }}</div>
-          <div class="mt-3 text-[15px] font-semibold text-muted">總打卡次數</div>
-        </div>
-        <div class="arcade-panel p-5 text-center">
-          <div class="font-pixel text-2xl text-acc">{{ checkinStore.scheduleStats.uniqueUsers }}</div>
-          <div class="mt-3 text-[15px] font-semibold text-muted">參與人數</div>
         </div>
       </section>
     </div>
