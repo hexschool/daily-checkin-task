@@ -65,11 +65,6 @@ function isSameLocalDate(a: Date, b: Date): boolean {
 function isToday(dateStr: string): boolean {
   return isSameLocalDate(new Date(dateStr), new Date())
 }
-function isYesterday(dateStr: string): boolean {
-  const yesterday = new Date()
-  yesterday.setDate(yesterday.getDate() - 1)
-  return isSameLocalDate(new Date(dateStr), yesterday)
-}
 
 type CellState = 'done' | 'today' | 'miss' | 'future'
 interface HeatCell {
@@ -201,8 +196,8 @@ onMounted(async () => {
             :class="{
               'border-acc bg-acc shadow-[0_0_9px_color-mix(in_srgb,var(--color-acc)_40%,transparent)]': cell.state === 'done',
               'border-2 border-acc2 bg-transparent shadow-[0_0_14px_color-mix(in_srgb,var(--color-acc2)_55%,transparent)] [animation:arcade-blink_1.1s_steps(2,jump-none)_infinite]': cell.state === 'today',
-              'border-edge bg-[color-mix(in_srgb,var(--color-ink)_9%,var(--color-base))]': cell.state === 'miss',
-              'border-edge bg-base': cell.state === 'future',
+              'border-edge bg-[color-mix(in_srgb,var(--color-ink)_22%,var(--color-base))]': cell.state === 'miss',
+              'border-dashed border-edge bg-base': cell.state === 'future',
             }"
             @click="selectCell(cell)"
           ></button>
@@ -210,8 +205,8 @@ onMounted(async () => {
         <div class="mt-4 flex flex-wrap gap-4 text-[15px] text-muted">
           <span class="flex items-center gap-2"><i class="inline-block h-3.5 w-3.5 border border-acc bg-acc"></i> 已完成</span>
           <span class="flex items-center gap-2"><i class="inline-block h-3.5 w-3.5 border-2 border-acc2"></i> 今日</span>
-          <span class="flex items-center gap-2"><i class="inline-block h-3.5 w-3.5 border border-edge bg-[color-mix(in_srgb,var(--color-ink)_9%,var(--color-base))]"></i> 未完成</span>
-          <span class="flex items-center gap-2"><i class="inline-block h-3.5 w-3.5 border border-edge bg-base"></i> 未發佈</span>
+          <span class="flex items-center gap-2"><i class="inline-block h-3.5 w-3.5 border border-edge bg-[color-mix(in_srgb,var(--color-ink)_22%,var(--color-base))]"></i> 未完成</span>
+          <span class="flex items-center gap-2"><i class="inline-block h-3.5 w-3.5 border border-dashed border-edge bg-base"></i> 未發佈</span>
         </div>
       </section>
 
@@ -291,7 +286,7 @@ onMounted(async () => {
               class="arcade-btn shrink-0"
             ><i class="bi bi-discord"></i> 前往打卡</a>
             <a
-              v-else-if="isYesterday(task.date)"
+              v-else
               :href="task.threadUrl"
               target="_blank"
               rel="noopener noreferrer"
