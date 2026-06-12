@@ -11,6 +11,7 @@ import { checkinApi } from '@/api/checkin'
 import { useIdentityStore } from '@/stores/identity'
 import { usePinnedStore } from '@/stores/pinned'
 import { useStreaks } from '@/composables/useStreaks'
+import { getEligibleFlameIds, rotateFlameWindow, useFlameTick } from '@/composables/useFlameHighlights'
 import type { UserCheckinItem } from '@/types/checkin'
 
 const route = useRoute()
@@ -72,6 +73,30 @@ function getUserStreak(user: UserCheckinItem) {
   return useStreaks(user.checkinStatus, checkinStore.scheduleStats.dailyStats).currentStreak
 }
 
+// 旺火動畫：同一時間最多 10 個（避免長列表卡頓），並隨 flameTick 輪流分配給所有達標者
+const MAX_ANIMATED_FIRES = 10
+const flameTick = useFlameTick()
+
+// 合格名單（連續 7 天以上）只隨資料變動，避免每次輪替都重算 streak
+const eligibleFireIds = computed(() =>
+  getEligibleFlameIds(
+    sortedUsers.value.map((u) => ({ id: u.discordUserId, streak: getUserStreak(u) })),
+  ),
+)
+const eligibleFireIdsSearch = computed(() =>
+  getEligibleFlameIds(
+    searchResults.value.map((u) => ({ id: u.discordUserId, streak: getUserStreak(u) })),
+  ),
+)
+
+// 本回合實際播放動畫的名單（隨 flameTick 滑動視窗）
+const animatedFireIds = computed(() =>
+  rotateFlameWindow(eligibleFireIds.value, MAX_ANIMATED_FIRES, flameTick.value),
+)
+const animatedFireIdsSearch = computed(() =>
+  rotateFlameWindow(eligibleFireIdsSearch.value, MAX_ANIMATED_FIRES, flameTick.value),
+)
+
 function getCompletionRate(user: UserCheckinItem): number {
   const expected = checkinStore.scheduleStats?.expectedTasks ?? 1
   return Math.round((user.totalCheckinDays / expected) * 100)
@@ -121,6 +146,11 @@ onMounted(async () => {
         <p class="mt-1 text-[15px] text-muted">
           共 <span class="font-pixel text-acc">{{ sortedUsers.length }}</span> 位參與者
         </p>
+        <!-- 火焰圖示說明 -->
+        <p class="mt-3 flex items-start gap-2 border-t border-edge pt-3 text-[14px] text-muted">
+          <i class="bi bi-fire mt-0.5 shrink-0 text-acc"></i>
+          <span>火焰圖示代表「目前連續打卡天數」，連續越多天、火焰越旺、燃燒越劇烈。</span>
+        </p>
       </header>
 
       <!-- Search Bar -->
@@ -167,7 +197,11 @@ onMounted(async () => {
             </RouterLink>
 
             <div class="flex items-center gap-3">
-              <StreakBadge :streak="getUserStreak(user)" size="sm" />
+              <StreakBadge
+                :streak="getUserStreak(user)"
+                size="sm"
+                :animated="animatedFireIdsSearch.has(user.discordUserId)"
+              />
               <div class="text-right">
                 <p class="text-[15px] font-bold text-ink"><span class="font-pixel text-acc">{{ user.totalCheckinDays }}</span> 天</p>
                 <p class="text-[15px] text-muted">{{ getCompletionRate(user) }}%</p>
@@ -223,7 +257,11 @@ onMounted(async () => {
 
             <!-- Stats + Actions -->
             <div class="flex items-center gap-3">
-              <StreakBadge :streak="getUserStreak(user)" size="sm" />
+              <StreakBadge
+                :streak="getUserStreak(user)"
+                size="sm"
+                :animated="animatedFireIds.has(user.discordUserId)"
+              />
               <div class="text-right">
                 <p class="text-[15px] font-bold text-ink"><span class="font-pixel text-acc">{{ user.totalCheckinDays }}</span> 天</p>
                 <p class="text-[15px] text-muted">{{ getCompletionRate(user) }}%</p>

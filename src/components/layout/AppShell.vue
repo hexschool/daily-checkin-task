@@ -1,17 +1,7 @@
 <script setup lang="ts">
-import { watch } from 'vue'
-import { useRoute } from 'vue-router'
 import TopNavBar from './TopNavBar.vue'
 
-const route = useRoute()
-
-// 路由變化時滾動到頂部
-watch(
-  () => route.path,
-  () => {
-    window.scrollTo(0, 0)
-  },
-)
+// 換頁捲回頂部由 router 的 scrollBehavior 統一處理（見 router/index.ts）
 </script>
 
 <template>

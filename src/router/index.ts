@@ -2,6 +2,10 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
+  // 換頁一律捲回最上方（瀏覽器返回／前進時保留原本位置）
+  scrollBehavior(_to, _from, savedPosition) {
+    return savedPosition ?? { top: 0 }
+  },
   routes: [
     {
       // 根路由導向打卡日曆（打卡日曆為主要首頁）

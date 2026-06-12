@@ -200,15 +200,23 @@ onMounted(async () => {
           </div>
           <div class="flex items-center gap-3">
             <StreakBadge :streak="streakResult.currentStreak" size="lg" />
-            <button
-              type="button"
-              @click="clearIdentity"
-              class="flex h-9 w-9 items-center justify-center border border-edge text-muted transition-colors hover:border-acc2 hover:text-acc2"
-              title="切換身份"
-              aria-label="切換身份"
-            >
-              <i class="bi bi-person-x text-base"></i>
-            </button>
+            <!-- 「不是我」：切換／清除身份，hover 顯示 popover 說明 -->
+            <div class="group relative">
+              <button
+                type="button"
+                @click="clearIdentity"
+                class="flex h-10 w-10 items-center justify-center border-2 border-edge text-ink transition-colors hover:border-acc2 hover:bg-acc2 hover:text-acc-ink"
+                aria-label="這不是我，切換身份"
+              >
+                <i class="bi bi-person-x-fill text-xl"></i>
+              </button>
+              <span
+                role="tooltip"
+                class="pointer-events-none absolute right-0 top-full z-20 mt-2 whitespace-nowrap border border-acc2 bg-panel px-2.5 py-1.5 text-[13px] font-bold text-acc2 opacity-0 shadow-[3px_3px_0_var(--color-acc2)] transition-opacity duration-150 group-hover:opacity-100"
+              >
+                這不是我？切換身份
+              </span>
+            </div>
           </div>
         </div>
 

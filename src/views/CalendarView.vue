@@ -95,13 +95,11 @@ const heatCells = computed<HeatCell[]>(() => {
   return cells
 })
 
-// 每日任務：取最近 5 天（新到舊）
+// 每日任務：全部天數（新到舊），列表區塊限高並可捲動
 const dailyTasks = computed(() => {
   const stats = checkinStore.scheduleStats?.dailyStats
   if (!stats) return []
-  return [...stats]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 5)
+  return [...stats].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 })
 
 function selectCell(cell: HeatCell) {
@@ -192,7 +190,7 @@ onMounted(async () => {
             type="button"
             :disabled="!cell.stat"
             :title="cell.dayLabel || `Day ${cell.dayNumber}`"
-            class="aspect-square border transition-transform hover:scale-110 disabled:cursor-default disabled:hover:scale-100"
+            class="aspect-square cursor-pointer border transition-transform hover:scale-110 disabled:cursor-default disabled:hover:scale-100"
             :class="{
               'border-acc bg-acc shadow-[0_0_9px_color-mix(in_srgb,var(--color-acc)_40%,transparent)]': cell.state === 'done',
               'border-2 border-acc2 bg-transparent shadow-[0_0_14px_color-mix(in_srgb,var(--color-acc2)_55%,transparent)] [animation:arcade-blink_1.1s_steps(2,jump-none)_infinite]': cell.state === 'today',
@@ -261,10 +259,14 @@ onMounted(async () => {
           </p>
         </div>
 
-        <div class="space-y-2.5">
-          <div
+        <!-- 全部天數，限高並可捲動查看 -->
+        <div class="max-h-[28rem] space-y-2.5 overflow-y-auto overflow-x-hidden pr-1">
+          <a
             v-for="task in dailyTasks"
             :key="task.dayLabel"
+            :href="task.threadUrl"
+            target="_blank"
+            rel="noopener noreferrer"
             class="flex items-center gap-3 border border-edge bg-surface p-4 transition-all hover:translate-x-1 hover:border-acc"
           >
             <span
@@ -278,21 +280,10 @@ onMounted(async () => {
                 <span v-else-if="myCheckinStatus?.[task.dayLabel]" class="arcade-badge arcade-badge-done">已完成</span>
               </div>
             </div>
-            <a
-              v-if="isToday(task.date)"
-              :href="task.threadUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="arcade-btn shrink-0"
-            ><i class="bi bi-discord"></i> 前往打卡</a>
-            <a
-              v-else
-              :href="task.threadUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="arcade-btn-alt shrink-0"
-            >前往 ↗</a>
-          </div>
+            <!-- 整列即連結，以下僅為視覺提示（避免巢狀 <a>） -->
+            <span v-if="isToday(task.date)" class="arcade-btn shrink-0"><i class="bi bi-discord"></i> 前往打卡</span>
+            <span v-else class="arcade-btn-alt shrink-0">前往 ↗</span>
+          </a>
         </div>
       </section>
     </div>

@@ -6,7 +6,7 @@
    單色為主，狀態用「填滿 / 外框 / 閃爍」區分
 ──────────────────────────────────────────── */
 @theme {
-  --font-pixel: "Silkscreen", "JetBrains Mono", ui-monospace, monospace;
+  --font-pixel: "DotGothic16", "JetBrains Mono", ui-monospace, monospace;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
   --color-base: #0b0c11;     /* 頁面底色 */
@@ -86,6 +86,19 @@
   #app {
     position: relative;
     z-index: 1;
+  }
+  /* 全站可點擊元素一律顯示手指游標，停用狀態則維持預設箭頭 */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href],
+  label[for],
+  summary,
+  select {
+    cursor: pointer;
+  }
+  button:disabled,
+  [role="button"][aria-disabled="true"] {
+    cursor: default;
   }
 }
 
