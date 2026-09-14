@@ -41,7 +41,7 @@ function formatDateTime(dateString: string, timeString: string | null) {
             :class="detail.checkedIn ? 'border-acc text-acc' : 'border-edge text-muted'"
           >
             <i
-              class="bi text-base"
+              class="bi text-[16px]"
               :class="detail.checkedIn ? 'bi-check-lg' : 'bi-calendar-event'"
             ></i>
           </div>

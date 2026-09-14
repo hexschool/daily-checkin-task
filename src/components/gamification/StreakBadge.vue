@@ -3,7 +3,7 @@ import { computed } from 'vue'
 
 interface Props {
   streak: number
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
   // 是否播放火焰動畫；長列表可由父層挑選少數開啟以控制效能（預設開啟）
   animated?: boolean
 }
@@ -41,8 +41,9 @@ const animationClass = computed(() => {
     class="inline-flex items-center gap-1 font-bold text-acc"
     :class="{
       'text-[15px]': size === 'sm',
-      'text-base': size === 'md',
+      'text-[16px]': size === 'md',
       'text-xl': size === 'lg',
+      'text-3xl': size === 'xl',
     }"
   >
     <i class="bi bi-fire streak-fire" :class="[`streak-fire--${tier}`, animationClass]"></i>

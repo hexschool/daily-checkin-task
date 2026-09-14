@@ -191,7 +191,7 @@ onMounted(async () => {
               title="取消追蹤"
               aria-label="取消追蹤"
             >
-              <i class="bi bi-x-lg text-base"></i>
+              <i class="bi bi-x-lg text-[16px]"></i>
             </button>
           </div>
 

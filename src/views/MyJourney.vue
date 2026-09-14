@@ -198,8 +198,31 @@ onMounted(async () => {
               <p class="font-mono text-[15px] text-muted">@{{ myUser.username }}</p>
             </div>
           </div>
-          <div class="flex items-center gap-3">
-            <StreakBadge :streak="streakResult.currentStreak" size="lg" />
+          <div class="flex w-full items-center justify-between gap-5 sm:w-auto">
+            <!-- 打卡數據：打卡天數（已打卡 / 已發佈天數）、連續打卡天數 -->
+            <dl class="flex">
+              <div class="pr-5">
+                <dt class="text-[13px] font-bold tracking-[0.12em] text-muted">打卡天數</dt>
+                <dd class="mt-2 font-pixel text-3xl leading-none text-acc">
+                  <span>{{ myUser.totalCheckinDays }}</span>
+                  <span class="ml-1 text-[15px] text-muted">/ {{ checkinStore.scheduleStats.dailyTasks }}</span>
+                </dd>
+              </div>
+              <div class="border-l border-edge pl-5">
+                <dt class="text-[13px] font-bold tracking-[0.12em] text-muted">連續打卡</dt>
+                <dd class="mt-2 leading-none">
+                  <StreakBadge
+                    v-if="streakResult.currentStreak > 0"
+                    :streak="streakResult.currentStreak"
+                    size="xl"
+                  />
+                  <span v-else class="inline-flex items-center gap-1 text-3xl text-muted">
+                    <i class="bi bi-fire"></i><span class="font-pixel">0</span>
+                  </span>
+                  <span class="ml-1 text-[15px] text-muted">天</span>
+                </dd>
+              </div>
+            </dl>
             <!-- 「不是我」：切換／清除身份，hover 顯示 popover 說明 -->
             <div class="group relative">
               <button
@@ -320,7 +343,7 @@ onMounted(async () => {
             <div class="flex items-center justify-between border-b border-edge px-5 py-4">
               <div class="flex items-center gap-2">
                 <i class="bi bi-person-badge text-acc"></i>
-                <h2 class="text-base font-bold text-ink">找到你自己</h2>
+                <h2 class="text-[16px] font-bold text-ink">找到你自己</h2>
               </div>
               <button
                 type="button"
