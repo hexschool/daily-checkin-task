@@ -114,7 +114,11 @@ const myCheckinStatus = computed(() => {
 
 const streakResult = computed(() => {
   if (!checkinStore.scheduleStats) return { currentStreak: 0, longestStreak: 0 }
-  return useStreaks(myCheckinStatus.value, checkinStore.scheduleStats.dailyStats)
+  return useStreaks(
+    myCheckinStatus.value,
+    checkinStore.scheduleStats.dailyStats,
+    checkinStore.scheduleStats,
+  )
 })
 
 const achievements = computed(() => {
@@ -147,7 +151,11 @@ const friendList = computed(() => {
 // 好友的 streak 計算
 function getFriendStreak(checkinStatus: Record<string, boolean>) {
   if (!checkinStore.scheduleStats) return 0
-  return useStreaks(checkinStatus, checkinStore.scheduleStats.dailyStats).currentStreak
+  return useStreaks(
+    checkinStatus,
+    checkinStore.scheduleStats.dailyStats,
+    checkinStore.scheduleStats,
+  ).currentStreak
 }
 
 // 頭貼 URL

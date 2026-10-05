@@ -14,6 +14,8 @@ export interface ScheduleStats {
   dailyStats: DailyStat[]
   checkinMode: CheckinMode
   extendedHours?: number
+  startDate?: string
+  endDate?: string
 }
 
 export interface ChannelInfo {

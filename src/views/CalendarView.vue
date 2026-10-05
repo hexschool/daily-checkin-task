@@ -51,7 +51,11 @@ const myCheckinStatus = computed(() => {
 // 個人連續天數（已設定身份才顯示）
 const myStreak = computed(() => {
   if (!myCheckinStatus.value || !checkinStore.scheduleStats) return null
-  return useStreaks(myCheckinStatus.value, checkinStore.scheduleStats.dailyStats).currentStreak
+  return useStreaks(
+    myCheckinStatus.value,
+    checkinStore.scheduleStats.dailyStats,
+    checkinStore.scheduleStats,
+  ).currentStreak
 })
 
 // 以本地年/月/日判斷某日期是否為今天 / 昨天

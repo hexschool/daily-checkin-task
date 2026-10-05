@@ -52,7 +52,11 @@ const friends = computed(() => pinnedStore.getPinnedUserList(scheduleId.value))
 
 function getUserStreak(user: UserCheckinItem) {
   if (!checkinStore.scheduleStats) return 0
-  return useStreaks(user.checkinStatus, checkinStore.scheduleStats.dailyStats).currentStreak
+  return useStreaks(
+    user.checkinStatus,
+    checkinStore.scheduleStats.dailyStats,
+    checkinStore.scheduleStats,
+  ).currentStreak
 }
 
 function getCompletionRate(user: UserCheckinItem): number {

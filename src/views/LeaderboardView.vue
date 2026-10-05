@@ -70,7 +70,11 @@ const myRank = computed(() => {
 
 function getUserStreak(user: UserCheckinItem) {
   if (!checkinStore.scheduleStats) return 0
-  return useStreaks(user.checkinStatus, checkinStore.scheduleStats.dailyStats).currentStreak
+  return useStreaks(
+    user.checkinStatus,
+    checkinStore.scheduleStats.dailyStats,
+    checkinStore.scheduleStats,
+  ).currentStreak
 }
 
 // 旺火動畫：同一時間最多 10 個（避免長列表卡頓），並隨 flameTick 輪流分配給所有達標者
